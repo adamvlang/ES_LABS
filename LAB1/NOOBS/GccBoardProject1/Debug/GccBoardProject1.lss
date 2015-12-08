@@ -1,0 +1,732 @@
+
+GccBoardProject1.elf:     file format elf32-avr32
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .reset        00002008  80000000  80000000  00000400  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rela.got     00000000  80002008  80002008  00002408  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .text         000003c2  80002008  80002008  00002408  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  3 .exception    00000200  80002400  80002400  00002800  2**9
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  4 .rodata       00000110  80002600  80002600  00002a00  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  5 .dalign       00000004  00000004  00000004  00000000  2**0
+                  ALLOC
+  6 .bss          000000f0  00000008  00000008  00000000  2**2
+                  ALLOC
+  7 .heap         0000ef08  000000f8  000000f8  00000000  2**0
+                  ALLOC
+  8 .comment      00000030  00000000  00000000  00002b10  2**0
+                  CONTENTS, READONLY
+  9 .debug_aranges 00000340  00000000  00000000  00002b40  2**3
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_pubnames 00000632  00000000  00000000  00002e80  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_info   0000475c  00000000  00000000  000034b2  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_abbrev 00000b4f  00000000  00000000  00007c0e  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 13 .debug_line   000034f3  00000000  00000000  0000875d  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 14 .debug_frame  000005ec  00000000  00000000  0000bc50  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 15 .debug_str    0000104a  00000000  00000000  0000c23c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 16 .debug_loc    0000083c  00000000  00000000  0000d286  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 17 .debug_macinfo 00584b2a  00000000  00000000  0000dac2  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 18 .stack        00001000  0000f000  0000f000  00000000  2**0
+                  ALLOC
+ 19 .debug_ranges 000002d8  00000000  00000000  005925f0  2**3
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .reset:
+
+80000000 <_start>:
+80000000:	fe cf dd 24 	sub	pc,pc,-8924
+
+80000004 <_trampoline>:
+80000004:	e0 8f 10 00 	bral	80002004 <program_start>
+	...
+
+80002004 <program_start>:
+80002004:	fe cf fd 28 	sub	pc,pc,-728
+
+Disassembly of section .text:
+
+80002008 <board_init>:
+80002008:	d4 01       	pushm	lr
+8000200a:	30 3b       	mov	r11,3
+8000200c:	33 bc       	mov	r12,59
+8000200e:	f0 1f 00 2c 	mcall	800020bc <board_init+0xb4>
+80002012:	30 3b       	mov	r11,3
+80002014:	33 cc       	mov	r12,60
+80002016:	f0 1f 00 2a 	mcall	800020bc <board_init+0xb4>
+8000201a:	30 3b       	mov	r11,3
+8000201c:	33 dc       	mov	r12,61
+8000201e:	f0 1f 00 28 	mcall	800020bc <board_init+0xb4>
+80002022:	30 3b       	mov	r11,3
+80002024:	33 ec       	mov	r12,62
+80002026:	f0 1f 00 26 	mcall	800020bc <board_init+0xb4>
+8000202a:	30 3b       	mov	r11,3
+8000202c:	33 3c       	mov	r12,51
+8000202e:	f0 1f 00 24 	mcall	800020bc <board_init+0xb4>
+80002032:	30 3b       	mov	r11,3
+80002034:	33 4c       	mov	r12,52
+80002036:	f0 1f 00 22 	mcall	800020bc <board_init+0xb4>
+8000203a:	30 3b       	mov	r11,3
+8000203c:	33 5c       	mov	r12,53
+8000203e:	f0 1f 00 20 	mcall	800020bc <board_init+0xb4>
+80002042:	30 3b       	mov	r11,3
+80002044:	33 6c       	mov	r12,54
+80002046:	f0 1f 00 1e 	mcall	800020bc <board_init+0xb4>
+8000204a:	30 0b       	mov	r11,0
+8000204c:	35 8c       	mov	r12,88
+8000204e:	f0 1f 00 1c 	mcall	800020bc <board_init+0xb4>
+80002052:	30 0b       	mov	r11,0
+80002054:	35 5c       	mov	r12,85
+80002056:	f0 1f 00 1a 	mcall	800020bc <board_init+0xb4>
+8000205a:	30 0b       	mov	r11,0
+8000205c:	35 2c       	mov	r12,82
+8000205e:	f0 1f 00 18 	mcall	800020bc <board_init+0xb4>
+80002062:	30 0b       	mov	r11,0
+80002064:	31 4c       	mov	r12,20
+80002066:	f0 1f 00 16 	mcall	800020bc <board_init+0xb4>
+8000206a:	30 0b       	mov	r11,0
+8000206c:	31 9c       	mov	r12,25
+8000206e:	f0 1f 00 14 	mcall	800020bc <board_init+0xb4>
+80002072:	30 0b       	mov	r11,0
+80002074:	31 ac       	mov	r12,26
+80002076:	f0 1f 00 12 	mcall	800020bc <board_init+0xb4>
+8000207a:	30 0b       	mov	r11,0
+8000207c:	31 bc       	mov	r12,27
+8000207e:	f0 1f 00 10 	mcall	800020bc <board_init+0xb4>
+80002082:	30 4b       	mov	r11,4
+80002084:	48 fc       	lddpc	r12,800020c0 <board_init+0xb8>
+80002086:	f0 1f 00 10 	mcall	800020c4 <board_init+0xbc>
+8000208a:	30 4b       	mov	r11,4
+8000208c:	48 fc       	lddpc	r12,800020c8 <board_init+0xc0>
+8000208e:	f0 1f 00 0e 	mcall	800020c4 <board_init+0xbc>
+80002092:	30 0b       	mov	r11,0
+80002094:	30 2c       	mov	r12,2
+80002096:	f0 1f 00 0a 	mcall	800020bc <board_init+0xb4>
+8000209a:	30 0b       	mov	r11,0
+8000209c:	30 7c       	mov	r12,7
+8000209e:	f0 1f 00 08 	mcall	800020bc <board_init+0xb4>
+800020a2:	30 2b       	mov	r11,2
+800020a4:	48 ac       	lddpc	r12,800020cc <board_init+0xc4>
+800020a6:	f0 1f 00 08 	mcall	800020c4 <board_init+0xbc>
+800020aa:	30 2b       	mov	r11,2
+800020ac:	48 9c       	lddpc	r12,800020d0 <board_init+0xc8>
+800020ae:	f0 1f 00 06 	mcall	800020c4 <board_init+0xbc>
+800020b2:	30 2b       	mov	r11,2
+800020b4:	48 8c       	lddpc	r12,800020d4 <board_init+0xcc>
+800020b6:	f0 1f 00 04 	mcall	800020c4 <board_init+0xbc>
+800020ba:	d8 02       	popm	pc
+800020bc:	80 00       	ld.sh	r0,r0[0x0]
+800020be:	21 a4       	sub	r4,26
+800020c0:	80 00       	ld.sh	r0,r0[0x0]
+800020c2:	26 50       	sub	r0,101
+800020c4:	80 00       	ld.sh	r0,r0[0x0]
+800020c6:	21 74       	sub	r4,23
+800020c8:	80 00       	ld.sh	r0,r0[0x0]
+800020ca:	26 00       	sub	r0,96
+800020cc:	80 00       	ld.sh	r0,r0[0x0]
+800020ce:	26 40       	sub	r0,100
+800020d0:	80 00       	ld.sh	r0,r0[0x0]
+800020d2:	26 30       	sub	r0,99
+800020d4:	80 00       	ld.sh	r0,r0[0x0]
+800020d6:	26 20       	sub	r0,98
+
+800020d8 <adc_start>:
+800020d8:	30 28       	mov	r8,2
+800020da:	99 08       	st.w	r12[0x0],r8
+800020dc:	5e fc       	retal	r12
+
+800020de <adc_enable>:
+800020de:	30 18       	mov	r8,1
+800020e0:	f0 0b 09 48 	lsl	r8,r8,r11
+800020e4:	99 48       	st.w	r12[0x10],r8
+800020e6:	5e fc       	retal	r12
+
+800020e8 <adc_check_eoc>:
+800020e8:	78 78       	ld.w	r8,r12[0x1c]
+800020ea:	30 19       	mov	r9,1
+800020ec:	f2 0b 09 49 	lsl	r9,r9,r11
+800020f0:	f3 e8 00 08 	and	r8,r9,r8
+800020f4:	5f 1c       	srne	r12
+800020f6:	5e fc       	retal	r12
+
+800020f8 <adc_get_value>:
+800020f8:	eb cd 40 e0 	pushm	r5-r7,lr
+800020fc:	18 97       	mov	r7,r12
+800020fe:	16 95       	mov	r5,r11
+80002100:	ed db c0 10 	bfextu	r6,r11,0x0,0x10
+80002104:	0c 9b       	mov	r11,r6
+80002106:	0e 9c       	mov	r12,r7
+80002108:	f0 1f 00 05 	mcall	8000211c <adc_get_value+0x24>
+8000210c:	cf c0       	breq	80002104 <adc_get_value+0xc>
+8000210e:	2d 07       	sub	r7,-48
+80002110:	5c 75       	castu.h	r5
+80002112:	ee 05 03 2c 	ld.w	r12,r7[r5<<0x2]
+80002116:	e3 cd 80 e0 	ldm	sp++,r5-r7,pc
+8000211a:	00 00       	add	r0,r0
+8000211c:	80 00       	ld.sh	r0,r0[0x0]
+8000211e:	20 e8       	sub	r8,14
+
+80002120 <gpio_enable_module_pin>:
+80002120:	f8 08 16 05 	lsr	r8,r12,0x5
+80002124:	a9 68       	lsl	r8,0x8
+80002126:	e0 28 f0 00 	sub	r8,61440
+8000212a:	58 1b       	cp.w	r11,1
+8000212c:	c0 d0       	breq	80002146 <gpio_enable_module_pin+0x26>
+8000212e:	c0 63       	brcs	8000213a <gpio_enable_module_pin+0x1a>
+80002130:	58 2b       	cp.w	r11,2
+80002132:	c1 00       	breq	80002152 <gpio_enable_module_pin+0x32>
+80002134:	58 3b       	cp.w	r11,3
+80002136:	c1 40       	breq	8000215e <gpio_enable_module_pin+0x3e>
+80002138:	5e ff       	retal	1
+8000213a:	30 19       	mov	r9,1
+8000213c:	f2 0c 09 49 	lsl	r9,r9,r12
+80002140:	91 69       	st.w	r8[0x18],r9
+80002142:	91 a9       	st.w	r8[0x28],r9
+80002144:	c1 28       	rjmp	80002168 <gpio_enable_module_pin+0x48>
+80002146:	30 19       	mov	r9,1
+80002148:	f2 0c 09 49 	lsl	r9,r9,r12
+8000214c:	91 59       	st.w	r8[0x14],r9
+8000214e:	91 a9       	st.w	r8[0x28],r9
+80002150:	c0 c8       	rjmp	80002168 <gpio_enable_module_pin+0x48>
+80002152:	30 19       	mov	r9,1
+80002154:	f2 0c 09 49 	lsl	r9,r9,r12
+80002158:	91 69       	st.w	r8[0x18],r9
+8000215a:	91 99       	st.w	r8[0x24],r9
+8000215c:	c0 68       	rjmp	80002168 <gpio_enable_module_pin+0x48>
+8000215e:	30 19       	mov	r9,1
+80002160:	f2 0c 09 49 	lsl	r9,r9,r12
+80002164:	91 59       	st.w	r8[0x14],r9
+80002166:	91 99       	st.w	r8[0x24],r9
+80002168:	30 19       	mov	r9,1
+8000216a:	f2 0c 09 4c 	lsl	r12,r9,r12
+8000216e:	91 2c       	st.w	r8[0x8],r12
+80002170:	5e fd       	retal	0
+80002172:	d7 03       	nop
+
+80002174 <gpio_enable_module>:
+80002174:	d4 21       	pushm	r4-r7,lr
+80002176:	18 97       	mov	r7,r12
+80002178:	16 94       	mov	r4,r11
+8000217a:	58 0b       	cp.w	r11,0
+8000217c:	c0 31       	brne	80002182 <gpio_enable_module+0xe>
+8000217e:	30 05       	mov	r5,0
+80002180:	c0 d8       	rjmp	8000219a <gpio_enable_module+0x26>
+80002182:	30 06       	mov	r6,0
+80002184:	0c 95       	mov	r5,r6
+80002186:	6e 1b       	ld.w	r11,r7[0x4]
+80002188:	6e 0c       	ld.w	r12,r7[0x0]
+8000218a:	f0 1f 00 06 	mcall	800021a0 <gpio_enable_module+0x2c>
+8000218e:	18 45       	or	r5,r12
+80002190:	2f 87       	sub	r7,-8
+80002192:	2f f6       	sub	r6,-1
+80002194:	0c 34       	cp.w	r4,r6
+80002196:	fe 9b ff f8 	brhi	80002186 <gpio_enable_module+0x12>
+8000219a:	0a 9c       	mov	r12,r5
+8000219c:	d8 22       	popm	r4-r7,pc
+8000219e:	00 00       	add	r0,r0
+800021a0:	80 00       	ld.sh	r0,r0[0x0]
+800021a2:	21 20       	sub	r0,18
+
+800021a4 <gpio_configure_pin>:
+800021a4:	f8 08 16 05 	lsr	r8,r12,0x5
+800021a8:	a9 68       	lsl	r8,0x8
+800021aa:	e0 28 f0 00 	sub	r8,61440
+800021ae:	16 99       	mov	r9,r11
+800021b0:	e2 19 00 04 	andl	r9,0x4,COH
+800021b4:	c0 70       	breq	800021c2 <gpio_configure_pin+0x1e>
+800021b6:	30 19       	mov	r9,1
+800021b8:	f2 0c 09 49 	lsl	r9,r9,r12
+800021bc:	f1 49 00 74 	st.w	r8[116],r9
+800021c0:	c0 68       	rjmp	800021cc <gpio_configure_pin+0x28>
+800021c2:	30 19       	mov	r9,1
+800021c4:	f2 0c 09 49 	lsl	r9,r9,r12
+800021c8:	f1 49 00 78 	st.w	r8[120],r9
+800021cc:	16 99       	mov	r9,r11
+800021ce:	e2 19 00 80 	andl	r9,0x80,COH
+800021d2:	c2 40       	breq	8000221a <gpio_configure_pin+0x76>
+800021d4:	16 99       	mov	r9,r11
+800021d6:	e2 19 01 80 	andl	r9,0x180,COH
+800021da:	c0 90       	breq	800021ec <gpio_configure_pin+0x48>
+800021dc:	30 19       	mov	r9,1
+800021de:	f2 0c 09 49 	lsl	r9,r9,r12
+800021e2:	f1 49 00 a8 	st.w	r8[168],r9
+800021e6:	f1 49 00 b8 	st.w	r8[184],r9
+800021ea:	c1 88       	rjmp	8000221a <gpio_configure_pin+0x76>
+800021ec:	16 99       	mov	r9,r11
+800021ee:	e2 19 02 80 	andl	r9,0x280,COH
+800021f2:	c0 90       	breq	80002204 <gpio_configure_pin+0x60>
+800021f4:	30 19       	mov	r9,1
+800021f6:	f2 0c 09 49 	lsl	r9,r9,r12
+800021fa:	f1 49 00 a4 	st.w	r8[164],r9
+800021fe:	f1 49 00 b8 	st.w	r8[184],r9
+80002202:	c0 c8       	rjmp	8000221a <gpio_configure_pin+0x76>
+80002204:	16 99       	mov	r9,r11
+80002206:	e2 19 03 80 	andl	r9,0x380,COH
+8000220a:	c0 80       	breq	8000221a <gpio_configure_pin+0x76>
+8000220c:	30 19       	mov	r9,1
+8000220e:	f2 0c 09 49 	lsl	r9,r9,r12
+80002212:	f1 49 00 a8 	st.w	r8[168],r9
+80002216:	f1 49 00 b4 	st.w	r8[180],r9
+8000221a:	f3 db c0 01 	bfextu	r9,r11,0x0,0x1
+8000221e:	c1 50       	breq	80002248 <gpio_configure_pin+0xa4>
+80002220:	e2 1b 00 02 	andl	r11,0x2,COH
+80002224:	c0 70       	breq	80002232 <gpio_configure_pin+0x8e>
+80002226:	30 19       	mov	r9,1
+80002228:	f2 0c 09 49 	lsl	r9,r9,r12
+8000222c:	f1 49 00 54 	st.w	r8[84],r9
+80002230:	c0 68       	rjmp	8000223c <gpio_configure_pin+0x98>
+80002232:	30 19       	mov	r9,1
+80002234:	f2 0c 09 49 	lsl	r9,r9,r12
+80002238:	f1 49 00 58 	st.w	r8[88],r9
+8000223c:	30 19       	mov	r9,1
+8000223e:	f2 0c 09 49 	lsl	r9,r9,r12
+80002242:	f1 49 00 44 	st.w	r8[68],r9
+80002246:	c0 68       	rjmp	80002252 <gpio_configure_pin+0xae>
+80002248:	30 19       	mov	r9,1
+8000224a:	f2 0c 09 49 	lsl	r9,r9,r12
+8000224e:	f1 49 00 48 	st.w	r8[72],r9
+80002252:	30 19       	mov	r9,1
+80002254:	f2 0c 09 4c 	lsl	r12,r9,r12
+80002258:	91 1c       	st.w	r8[0x4],r12
+8000225a:	5e fc       	retal	r12
+
+8000225c <_get_interrupt_handler>:
+8000225c:	fe 78 08 00 	mov	r8,-63488
+80002260:	e0 69 00 83 	mov	r9,131
+80002264:	f2 0c 01 0c 	sub	r12,r9,r12
+80002268:	f0 0c 03 29 	ld.w	r9,r8[r12<<0x2]
+8000226c:	f2 ca ff c0 	sub	r10,r9,-64
+80002270:	f0 0a 03 28 	ld.w	r8,r8[r10<<0x2]
+80002274:	58 08       	cp.w	r8,0
+80002276:	c0 21       	brne	8000227a <_get_interrupt_handler+0x1e>
+80002278:	5e fd       	retal	0
+8000227a:	f0 08 12 00 	clz	r8,r8
+8000227e:	48 5a       	lddpc	r10,80002290 <_get_interrupt_handler+0x34>
+80002280:	f4 09 00 39 	add	r9,r10,r9<<0x3
+80002284:	f0 08 11 1f 	rsub	r8,r8,31
+80002288:	72 19       	ld.w	r9,r9[0x4]
+8000228a:	f2 08 03 2c 	ld.w	r12,r9[r8<<0x2]
+8000228e:	5e fc       	retal	r12
+80002290:	80 00       	ld.sh	r0,r0[0x0]
+80002292:	26 70       	sub	r0,103
+
+80002294 <pwm_channel_init>:
+80002294:	58 0b       	cp.w	r11,0
+80002296:	c1 90       	breq	800022c8 <pwm_channel_init+0x34>
+80002298:	58 6c       	cp.w	r12,6
+8000229a:	e0 8b 00 17 	brhi	800022c8 <pwm_channel_init+0x34>
+8000229e:	76 0a       	ld.w	r10,r11[0x0]
+800022a0:	fe 78 30 00 	mov	r8,-53248
+800022a4:	f8 c9 ff f0 	sub	r9,r12,-16
+800022a8:	a5 79       	lsl	r9,0x5
+800022aa:	f0 09 00 09 	add	r9,r8,r9
+800022ae:	93 0a       	st.w	r9[0x0],r10
+800022b0:	76 19       	ld.w	r9,r11[0x4]
+800022b2:	a5 7c       	lsl	r12,0x5
+800022b4:	f0 0c 00 0c 	add	r12,r8,r12
+800022b8:	f8 c8 fd fc 	sub	r8,r12,-516
+800022bc:	91 09       	st.w	r8[0x0],r9
+800022be:	76 28       	ld.w	r8,r11[0x8]
+800022c0:	f8 cc fd f8 	sub	r12,r12,-520
+800022c4:	99 08       	st.w	r12[0x0],r8
+800022c6:	5e fd       	retal	0
+800022c8:	5e ff       	retal	1
+
+800022ca <pwm_start_channels>:
+800022ca:	18 98       	mov	r8,r12
+800022cc:	e0 18 ff 80 	andl	r8,0xff80
+800022d0:	c0 20       	breq	800022d4 <pwm_start_channels+0xa>
+800022d2:	5e ff       	retal	1
+800022d4:	fe 78 30 00 	mov	r8,-53248
+800022d8:	91 1c       	st.w	r8[0x4],r12
+800022da:	5e fd       	retal	0
+
+800022dc <_stext>:
+800022dc:	e0 7d 00 00 	mov	sp,65536
+800022e0:	fe c0 fe e0 	sub	r0,pc,-288
+800022e4:	e3 b0 00 01 	mtsr	0x4,r0
+800022e8:	d5 53       	csrf	0x15
+800022ea:	30 80       	mov	r0,8
+800022ec:	30 81       	mov	r1,8
+800022ee:	02 30       	cp.w	r0,r1
+800022f0:	c0 72       	brcc	800022fe <idata_load_loop_end>
+800022f2:	fe c2 fb e2 	sub	r2,pc,-1054
+
+800022f6 <idata_load_loop>:
+800022f6:	a5 05       	ld.d	r4,r2++
+800022f8:	a1 24       	st.d	r0++,r4
+800022fa:	02 30       	cp.w	r0,r1
+800022fc:	cf d3       	brcs	800022f6 <idata_load_loop>
+
+800022fe <idata_load_loop_end>:
+800022fe:	30 80       	mov	r0,8
+80002300:	e0 61 00 f8 	mov	r1,248
+80002304:	02 30       	cp.w	r0,r1
+80002306:	c0 62       	brcc	80002312 <udata_clear_loop_end>
+80002308:	30 02       	mov	r2,0
+8000230a:	30 03       	mov	r3,0
+
+8000230c <udata_clear_loop>:
+8000230c:	a1 22       	st.d	r0++,r2
+8000230e:	02 30       	cp.w	r0,r1
+80002310:	cf e3       	brcs	8000230c <udata_clear_loop>
+
+80002312 <udata_clear_loop_end>:
+80002312:	fe cf ff 6a 	sub	pc,pc,-150
+80002316:	d7 03       	nop
+
+80002318 <lab5>:
+			}
+		}
+	}
+}
+
+void lab5(){
+80002318:	eb cd 40 f8 	pushm	r3-r7,lr
+8000231c:	20 8d       	sub	sp,32
+	//How many PWM channels exist? 7
+	adc_enable(&AVR32_ADC, 1);
+8000231e:	30 1b       	mov	r11,1
+80002320:	fe 7c 3c 00 	mov	r12,-50176
+80002324:	f0 1f 00 1a 	mcall	8000238c <lab5+0x74>
+	unsigned int channel_id = 2;
+	avr32_pwm_channel_t pwm_channel ={ .ccnt = 0};
+80002328:	32 0a       	mov	r10,32
+8000232a:	30 0b       	mov	r11,0
+8000232c:	1a 9c       	mov	r12,sp
+8000232e:	f0 1f 00 19 	mcall	80002390 <lab5+0x78>
+	gpio_enable_module_pin(AVR32_PWM_2_PIN,AVR32_PWM_2_FUNCTION);
+80002332:	30 0b       	mov	r11,0
+80002334:	33 5c       	mov	r12,53
+80002336:	f0 1f 00 18 	mcall	80002394 <lab5+0x7c>
+	pwm_channel.CMR.cpre = AVR32_PWM_CPRE_MCK_DIV_256;
+8000233a:	40 08       	lddsp	r8,sp[0x0]
+8000233c:	30 89       	mov	r9,8
+8000233e:	f1 d9 d0 04 	bfins	r8,r9,0x0,0x4
+80002342:	50 08       	stdsp	sp[0x0],r8
+	pwm_channel.cprd = 20;
+80002344:	31 48       	mov	r8,20
+80002346:	50 28       	stdsp	sp[0x8],r8
+	pwm_start_channels(1 << channel_id);
+80002348:	30 4c       	mov	r12,4
+8000234a:	f0 1f 00 14 	mcall	80002398 <lab5+0x80>
+
+	while(1)
+	{
+		
+		adc_start(&AVR32_ADC);
+8000234e:	fe 77 3c 00 	mov	r7,-50176
+		int adc_pot_value = adc_get_value(&AVR32_ADC,1);
+80002352:	30 16       	mov	r6,1
+		
+		pwm_channel.cdty = pwm_channel.cprd*adc_pot_value/1023;
+80002354:	e0 65 10 05 	mov	r5,4101
+80002358:	ea 15 00 40 	orh	r5,0x40
+		pwm_channel_init(channel_id,&pwm_channel);
+8000235c:	30 23       	mov	r3,2
+	pwm_start_channels(1 << channel_id);
+
+	while(1)
+	{
+		
+		adc_start(&AVR32_ADC);
+8000235e:	0e 9c       	mov	r12,r7
+80002360:	f0 1f 00 0f 	mcall	8000239c <lab5+0x84>
+		int adc_pot_value = adc_get_value(&AVR32_ADC,1);
+80002364:	0c 9b       	mov	r11,r6
+80002366:	0e 9c       	mov	r12,r7
+80002368:	f0 1f 00 0e 	mcall	800023a0 <lab5+0x88>
+		
+		pwm_channel.cdty = pwm_channel.cprd*adc_pot_value/1023;
+8000236c:	40 28       	lddsp	r8,sp[0x8]
+8000236e:	b1 3c       	mul	r12,r8
+80002370:	f8 05 06 48 	mulu.d	r8,r12,r5
+80002374:	12 1c       	sub	r12,r9
+80002376:	a1 9c       	lsr	r12,0x1
+80002378:	f8 09 00 09 	add	r9,r12,r9
+8000237c:	a9 99       	lsr	r9,0x9
+8000237e:	50 19       	stdsp	sp[0x4],r9
+		pwm_channel_init(channel_id,&pwm_channel);
+80002380:	1a 9b       	mov	r11,sp
+80002382:	06 9c       	mov	r12,r3
+80002384:	f0 1f 00 08 	mcall	800023a4 <lab5+0x8c>
+80002388:	ce bb       	rjmp	8000235e <lab5+0x46>
+8000238a:	00 00       	add	r0,r0
+8000238c:	80 00       	ld.sh	r0,r0[0x0]
+8000238e:	20 de       	sub	lr,13
+80002390:	80 00       	ld.sh	r0,r0[0x0]
+80002392:	23 bc       	sub	r12,59
+80002394:	80 00       	ld.sh	r0,r0[0x0]
+80002396:	21 20       	sub	r0,18
+80002398:	80 00       	ld.sh	r0,r0[0x0]
+8000239a:	22 ca       	sub	r10,44
+8000239c:	80 00       	ld.sh	r0,r0[0x0]
+8000239e:	20 d8       	sub	r8,13
+800023a0:	80 00       	ld.sh	r0,r0[0x0]
+800023a2:	20 f8       	sub	r8,15
+800023a4:	80 00       	ld.sh	r0,r0[0x0]
+800023a6:	22 94       	sub	r4,41
+
+800023a8 <main>:
+		
+	}
+}
+
+int main(void) {
+800023a8:	d4 01       	pushm	lr
+	board_init();
+800023aa:	f0 1f 00 03 	mcall	800023b4 <main+0xc>
+	lab5();
+800023ae:	f0 1f 00 03 	mcall	800023b8 <main+0x10>
+	//lab3_1();
+	//lab3_2();
+	//lab4_2();
+	//lab5();
+	return 0;
+}
+800023b2:	d8 0a       	popm	pc,r12=0
+800023b4:	80 00       	ld.sh	r0,r0[0x0]
+800023b6:	20 08       	sub	r8,0
+800023b8:	80 00       	ld.sh	r0,r0[0x0]
+800023ba:	23 18       	sub	r8,49
+
+800023bc <memset>:
+800023bc:	18 98       	mov	r8,r12
+800023be:	c0 38       	rjmp	800023c4 <memset+0x8>
+800023c0:	10 cb       	st.b	r8++,r11
+800023c2:	20 1a       	sub	r10,1
+800023c4:	58 0a       	cp.w	r10,0
+800023c6:	cf d1       	brne	800023c0 <memset+0x4>
+800023c8:	5e fc       	retal	r12
+
+Disassembly of section .exception:
+
+80002400 <_evba>:
+80002400:	c0 08       	rjmp	80002400 <_evba>
+	...
+
+80002404 <_handle_TLB_Multiple_Hit>:
+80002404:	c0 08       	rjmp	80002404 <_handle_TLB_Multiple_Hit>
+	...
+
+80002408 <_handle_Bus_Error_Data_Fetch>:
+80002408:	c0 08       	rjmp	80002408 <_handle_Bus_Error_Data_Fetch>
+	...
+
+8000240c <_handle_Bus_Error_Instruction_Fetch>:
+8000240c:	c0 08       	rjmp	8000240c <_handle_Bus_Error_Instruction_Fetch>
+	...
+
+80002410 <_handle_NMI>:
+80002410:	c0 08       	rjmp	80002410 <_handle_NMI>
+	...
+
+80002414 <_handle_Instruction_Address>:
+80002414:	c0 08       	rjmp	80002414 <_handle_Instruction_Address>
+	...
+
+80002418 <_handle_ITLB_Protection>:
+80002418:	c0 08       	rjmp	80002418 <_handle_ITLB_Protection>
+	...
+
+8000241c <_handle_Breakpoint>:
+8000241c:	c0 08       	rjmp	8000241c <_handle_Breakpoint>
+	...
+
+80002420 <_handle_Illegal_Opcode>:
+80002420:	c0 08       	rjmp	80002420 <_handle_Illegal_Opcode>
+	...
+
+80002424 <_handle_Unimplemented_Instruction>:
+80002424:	c0 08       	rjmp	80002424 <_handle_Unimplemented_Instruction>
+	...
+
+80002428 <_handle_Privilege_Violation>:
+80002428:	c0 08       	rjmp	80002428 <_handle_Privilege_Violation>
+	...
+
+8000242c <_handle_Floating_Point>:
+8000242c:	c0 08       	rjmp	8000242c <_handle_Floating_Point>
+	...
+
+80002430 <_handle_Coprocessor_Absent>:
+80002430:	c0 08       	rjmp	80002430 <_handle_Coprocessor_Absent>
+	...
+
+80002434 <_handle_Data_Address_Read>:
+80002434:	c0 08       	rjmp	80002434 <_handle_Data_Address_Read>
+	...
+
+80002438 <_handle_Data_Address_Write>:
+80002438:	c0 08       	rjmp	80002438 <_handle_Data_Address_Write>
+	...
+
+8000243c <_handle_DTLB_Protection_Read>:
+8000243c:	c0 08       	rjmp	8000243c <_handle_DTLB_Protection_Read>
+	...
+
+80002440 <_handle_DTLB_Protection_Write>:
+80002440:	c0 08       	rjmp	80002440 <_handle_DTLB_Protection_Write>
+	...
+
+80002444 <_handle_DTLB_Modified>:
+80002444:	c0 08       	rjmp	80002444 <_handle_DTLB_Modified>
+	...
+
+80002450 <_handle_ITLB_Miss>:
+80002450:	c0 08       	rjmp	80002450 <_handle_ITLB_Miss>
+	...
+
+80002460 <_handle_DTLB_Miss_Read>:
+80002460:	c0 08       	rjmp	80002460 <_handle_DTLB_Miss_Read>
+	...
+
+80002470 <_handle_DTLB_Miss_Write>:
+80002470:	c0 08       	rjmp	80002470 <_handle_DTLB_Miss_Write>
+	...
+
+80002500 <_handle_Supervisor_Call>:
+80002500:	c0 08       	rjmp	80002500 <_handle_Supervisor_Call>
+80002502:	d7 03       	nop
+
+80002504 <_int0>:
+80002504:	30 0c       	mov	r12,0
+80002506:	ca be       	rcall	8000225c <_get_interrupt_handler>
+80002508:	58 0c       	cp.w	r12,0
+8000250a:	f8 0f 17 10 	movne	pc,r12
+8000250e:	d6 03       	rete
+
+80002510 <_int1>:
+80002510:	30 1c       	mov	r12,1
+80002512:	ca 5e       	rcall	8000225c <_get_interrupt_handler>
+80002514:	58 0c       	cp.w	r12,0
+80002516:	f8 0f 17 10 	movne	pc,r12
+8000251a:	d6 03       	rete
+
+8000251c <_int2>:
+8000251c:	30 2c       	mov	r12,2
+8000251e:	c9 fe       	rcall	8000225c <_get_interrupt_handler>
+80002520:	58 0c       	cp.w	r12,0
+80002522:	f8 0f 17 10 	movne	pc,r12
+80002526:	d6 03       	rete
+
+80002528 <_int3>:
+80002528:	30 3c       	mov	r12,3
+8000252a:	c9 9e       	rcall	8000225c <_get_interrupt_handler>
+8000252c:	58 0c       	cp.w	r12,0
+8000252e:	f8 0f 17 10 	movne	pc,r12
+80002532:	d6 03       	rete
+80002534:	d7 03       	nop
+80002536:	d7 03       	nop
+80002538:	d7 03       	nop
+8000253a:	d7 03       	nop
+8000253c:	d7 03       	nop
+8000253e:	d7 03       	nop
+80002540:	d7 03       	nop
+80002542:	d7 03       	nop
+80002544:	d7 03       	nop
+80002546:	d7 03       	nop
+80002548:	d7 03       	nop
+8000254a:	d7 03       	nop
+8000254c:	d7 03       	nop
+8000254e:	d7 03       	nop
+80002550:	d7 03       	nop
+80002552:	d7 03       	nop
+80002554:	d7 03       	nop
+80002556:	d7 03       	nop
+80002558:	d7 03       	nop
+8000255a:	d7 03       	nop
+8000255c:	d7 03       	nop
+8000255e:	d7 03       	nop
+80002560:	d7 03       	nop
+80002562:	d7 03       	nop
+80002564:	d7 03       	nop
+80002566:	d7 03       	nop
+80002568:	d7 03       	nop
+8000256a:	d7 03       	nop
+8000256c:	d7 03       	nop
+8000256e:	d7 03       	nop
+80002570:	d7 03       	nop
+80002572:	d7 03       	nop
+80002574:	d7 03       	nop
+80002576:	d7 03       	nop
+80002578:	d7 03       	nop
+8000257a:	d7 03       	nop
+8000257c:	d7 03       	nop
+8000257e:	d7 03       	nop
+80002580:	d7 03       	nop
+80002582:	d7 03       	nop
+80002584:	d7 03       	nop
+80002586:	d7 03       	nop
+80002588:	d7 03       	nop
+8000258a:	d7 03       	nop
+8000258c:	d7 03       	nop
+8000258e:	d7 03       	nop
+80002590:	d7 03       	nop
+80002592:	d7 03       	nop
+80002594:	d7 03       	nop
+80002596:	d7 03       	nop
+80002598:	d7 03       	nop
+8000259a:	d7 03       	nop
+8000259c:	d7 03       	nop
+8000259e:	d7 03       	nop
+800025a0:	d7 03       	nop
+800025a2:	d7 03       	nop
+800025a4:	d7 03       	nop
+800025a6:	d7 03       	nop
+800025a8:	d7 03       	nop
+800025aa:	d7 03       	nop
+800025ac:	d7 03       	nop
+800025ae:	d7 03       	nop
+800025b0:	d7 03       	nop
+800025b2:	d7 03       	nop
+800025b4:	d7 03       	nop
+800025b6:	d7 03       	nop
+800025b8:	d7 03       	nop
+800025ba:	d7 03       	nop
+800025bc:	d7 03       	nop
+800025be:	d7 03       	nop
+800025c0:	d7 03       	nop
+800025c2:	d7 03       	nop
+800025c4:	d7 03       	nop
+800025c6:	d7 03       	nop
+800025c8:	d7 03       	nop
+800025ca:	d7 03       	nop
+800025cc:	d7 03       	nop
+800025ce:	d7 03       	nop
+800025d0:	d7 03       	nop
+800025d2:	d7 03       	nop
+800025d4:	d7 03       	nop
+800025d6:	d7 03       	nop
+800025d8:	d7 03       	nop
+800025da:	d7 03       	nop
+800025dc:	d7 03       	nop
+800025de:	d7 03       	nop
+800025e0:	d7 03       	nop
+800025e2:	d7 03       	nop
+800025e4:	d7 03       	nop
+800025e6:	d7 03       	nop
+800025e8:	d7 03       	nop
+800025ea:	d7 03       	nop
+800025ec:	d7 03       	nop
+800025ee:	d7 03       	nop
+800025f0:	d7 03       	nop
+800025f2:	d7 03       	nop
+800025f4:	d7 03       	nop
+800025f6:	d7 03       	nop
+800025f8:	d7 03       	nop
+800025fa:	d7 03       	nop
+800025fc:	d7 03       	nop
+800025fe:	d7 03       	nop

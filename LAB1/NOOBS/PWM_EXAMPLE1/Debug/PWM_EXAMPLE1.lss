@@ -1,0 +1,857 @@
+
+PWM_EXAMPLE1.elf:     file format elf32-avr32
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .reset        00002008  80000000  80000000  00000400  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .text         000001c2  80002008  80002008  00002408  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .exception    00000200  80002200  80002200  00002600  2**9
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  3 .rodata       000000a0  80002400  80002400  00002800  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  4 .dalign       00000004  00000004  00000004  00000000  2**0
+                  ALLOC
+  5 .bss          000000f0  00000008  00000008  00000000  2**2
+                  ALLOC
+  6 .heap         0000ef08  000000f8  000000f8  00000000  2**0
+                  ALLOC
+  7 .comment      00000030  00000000  00000000  000028a0  2**0
+                  CONTENTS, READONLY
+  8 .debug_aranges 00000228  00000000  00000000  000028d0  2**3
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_pubnames 00000464  00000000  00000000  00002af8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_info   00001f69  00000000  00000000  00002f5c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_abbrev 000007de  00000000  00000000  00004ec5  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_line   00002360  00000000  00000000  000056a3  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 13 .debug_frame  0000032c  00000000  00000000  00007a04  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 14 .debug_str    00000b44  00000000  00000000  00007d30  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 15 .debug_loc    0000051b  00000000  00000000  00008874  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 16 .debug_macinfo 003ac51f  00000000  00000000  00008d8f  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 17 .stack        00001000  0000f000  0000f000  00000000  2**0
+                  ALLOC
+ 18 .debug_ranges 000001d0  00000000  00000000  003b52b0  2**3
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .reset:
+
+80000000 <_start>:
+
+  .global _start
+  .type _start, @function
+_start:
+  // Jump to the C runtime startup routine.
+  lda.w   pc, _stext
+80000000:	fe cf de dc 	sub	pc,pc,-8484
+
+80000004 <_trampoline>:
+80000004:	e0 8f 10 00 	bral	80002004 <program_start>
+	...
+
+80002004 <program_start>:
+  rjmp    program_start
+
+  .org  PROGRAM_START_OFFSET
+program_start:
+  // Jump to the C runtime startup routine.
+  lda.w   pc, _stext
+80002004:	fe cf fe e0 	sub	pc,pc,-288
+
+Disassembly of section .text:
+
+80002008 <gpio_enable_module_pin>:
+80002008:	f8 08 16 05 	lsr	r8,r12,0x5
+ *
+ * \return \ref GPIO_SUCCESS or \ref GPIO_INVALID_ARGUMENT.
+ */
+uint32_t gpio_enable_module_pin(uint32_t pin, uint32_t function)
+{
+	volatile avr32_gpio_port_t *gpio_port = &AVR32_GPIO.port[pin >> 5];
+8000200c:	a9 68       	lsl	r8,0x8
+8000200e:	e0 28 f0 00 	sub	r8,61440
+
+	/* Enable the correct function. */
+	switch (function) {
+80002012:	58 1b       	cp.w	r11,1
+80002014:	c0 d0       	breq	8000202e <gpio_enable_module_pin+0x26>
+80002016:	c0 63       	brcs	80002022 <gpio_enable_module_pin+0x1a>
+80002018:	58 2b       	cp.w	r11,2
+8000201a:	c1 00       	breq	8000203a <gpio_enable_module_pin+0x32>
+8000201c:	58 3b       	cp.w	r11,3
+8000201e:	c1 40       	breq	80002046 <gpio_enable_module_pin+0x3e>
+80002020:	5e ff       	retal	1
+	case 0: /* A function. */
+		gpio_port->pmr0c = 1 << (pin & 0x1F);
+80002022:	30 19       	mov	r9,1
+80002024:	f2 0c 09 49 	lsl	r9,r9,r12
+80002028:	91 69       	st.w	r8[0x18],r9
+		gpio_port->pmr1c = 1 << (pin & 0x1F);
+8000202a:	91 a9       	st.w	r8[0x28],r9
+#if (AVR32_GPIO_H_VERSION >= 210)
+		gpio_port->pmr2c = 1 << (pin & 0x1F);
+#endif
+		break;
+8000202c:	c1 28       	rjmp	80002050 <gpio_enable_module_pin+0x48>
+
+	case 1: /* B function. */
+		gpio_port->pmr0s = 1 << (pin & 0x1F);
+8000202e:	30 19       	mov	r9,1
+80002030:	f2 0c 09 49 	lsl	r9,r9,r12
+80002034:	91 59       	st.w	r8[0x14],r9
+		gpio_port->pmr1c = 1 << (pin & 0x1F);
+80002036:	91 a9       	st.w	r8[0x28],r9
+#if (AVR32_GPIO_H_VERSION >= 210)
+		gpio_port->pmr2c = 1 << (pin & 0x1F);
+#endif
+		break;
+80002038:	c0 c8       	rjmp	80002050 <gpio_enable_module_pin+0x48>
+
+	case 2: /* C function. */
+		gpio_port->pmr0c = 1 << (pin & 0x1F);
+8000203a:	30 19       	mov	r9,1
+8000203c:	f2 0c 09 49 	lsl	r9,r9,r12
+80002040:	91 69       	st.w	r8[0x18],r9
+		gpio_port->pmr1s = 1 << (pin & 0x1F);
+80002042:	91 99       	st.w	r8[0x24],r9
+#if (AVR32_GPIO_H_VERSION >= 210)
+		gpio_port->pmr2c = 1 << (pin & 0x1F);
+#endif
+		break;
+80002044:	c0 68       	rjmp	80002050 <gpio_enable_module_pin+0x48>
+
+	case 3: /* D function. */
+		gpio_port->pmr0s = 1 << (pin & 0x1F);
+80002046:	30 19       	mov	r9,1
+80002048:	f2 0c 09 49 	lsl	r9,r9,r12
+8000204c:	91 59       	st.w	r8[0x14],r9
+		gpio_port->pmr1s = 1 << (pin & 0x1F);
+8000204e:	91 99       	st.w	r8[0x24],r9
+	default:
+		return GPIO_INVALID_ARGUMENT;
+	}
+
+	/* Disable GPIO control. */
+	gpio_port->gperc = 1 << (pin & 0x1F);
+80002050:	30 19       	mov	r9,1
+80002052:	f2 0c 09 4c 	lsl	r12,r9,r12
+80002056:	91 2c       	st.w	r8[0x8],r12
+80002058:	5e fd       	retal	0
+8000205a:	d7 03       	nop
+
+8000205c <_get_interrupt_handler>:
+__int_handler _get_interrupt_handler(uint32_t int_level)
+{
+	/* ICR3 is mapped first, ICR0 last.
+	Code in exception.S puts int_level in R12 which is used by the compiler
+	to pass a single argument to a function. */
+	uint32_t int_grp = AVR32_INTC.icr[AVR32_INTC_INT3 - int_level];
+8000205c:	fe 78 08 00 	mov	r8,-63488
+80002060:	e0 69 00 83 	mov	r9,131
+80002064:	f2 0c 01 0c 	sub	r12,r9,r12
+80002068:	f0 0c 03 29 	ld.w	r9,r8[r12<<0x2]
+	uint32_t int_req = AVR32_INTC.irr[int_grp];
+8000206c:	f2 ca ff c0 	sub	r10,r9,-64
+80002070:	f0 0a 03 28 	ld.w	r8,r8[r10<<0x2]
+	exception.S will provide the interrupt handler with a clean interrupt
+	stack frame, with nothing more pushed onto the stack. The interrupt
+	handler must manage the `rete' instruction, which can be done using
+	pure assembly, inline assembly or the `__attribute__((__interrupt__))'
+	C function attribute.*/
+	return (int_req)
+80002074:	58 08       	cp.w	r8,0
+80002076:	c0 21       	brne	8000207a <_get_interrupt_handler+0x1e>
+80002078:	5e fd       	retal	0
+		? _int_handler_table[int_grp]._int_line_handler_table[32
+8000207a:	f0 08 12 00 	clz	r8,r8
+8000207e:	48 5a       	lddpc	r10,80002090 <_get_interrupt_handler+0x34>
+80002080:	f4 09 00 39 	add	r9,r10,r9<<0x3
+80002084:	f0 08 11 1f 	rsub	r8,r8,31
+80002088:	72 19       	ld.w	r9,r9[0x4]
+	exception.S will provide the interrupt handler with a clean interrupt
+	stack frame, with nothing more pushed onto the stack. The interrupt
+	handler must manage the `rete' instruction, which can be done using
+	pure assembly, inline assembly or the `__attribute__((__interrupt__))'
+	C function attribute.*/
+	return (int_req)
+8000208a:	f2 08 03 2c 	ld.w	r12,r9[r8<<0x2]
+		? _int_handler_table[int_grp]._int_line_handler_table[32
+			- clz(int_req) - 1]
+		: NULL;
+}
+8000208e:	5e fc       	retal	r12
+80002090:	80 00       	ld.sh	r0,r0[0x0]
+80002092:	24 00       	sub	r0,64
+
+80002094 <pwm_channel_init>:
+
+int pwm_channel_init( unsigned int channel_id, const avr32_pwm_channel_t *pwm_channel)
+{
+  volatile avr32_pwm_t *pwm = &AVR32_PWM;
+
+  if (pwm_channel == 0) // Null pointer.
+80002094:	58 0b       	cp.w	r11,0
+80002096:	c1 90       	breq	800020c8 <pwm_channel_init+0x34>
+    return PWM_INVALID_ARGUMENT;
+  if (channel_id > AVR32_PWM_LINES_MSB) // Control input values.
+80002098:	58 6c       	cp.w	r12,6
+8000209a:	e0 8b 00 17 	brhi	800020c8 <pwm_channel_init+0x34>
+    return PWM_INVALID_INPUT;
+
+  pwm->channel[channel_id].cmr= pwm_channel->cmr;   // Channel mode.
+8000209e:	76 0a       	ld.w	r10,r11[0x0]
+800020a0:	fe 78 30 00 	mov	r8,-53248
+800020a4:	f8 c9 ff f0 	sub	r9,r12,-16
+800020a8:	a5 79       	lsl	r9,0x5
+800020aa:	f0 09 00 09 	add	r9,r8,r9
+800020ae:	93 0a       	st.w	r9[0x0],r10
+  pwm->channel[channel_id].cdty= pwm_channel->cdty; // Duty cycle, should be < CPRD.
+800020b0:	76 19       	ld.w	r9,r11[0x4]
+800020b2:	a5 7c       	lsl	r12,0x5
+800020b4:	f0 0c 00 0c 	add	r12,r8,r12
+800020b8:	f8 c8 fd fc 	sub	r8,r12,-516
+800020bc:	91 09       	st.w	r8[0x0],r9
+  pwm->channel[channel_id].cprd= pwm_channel->cprd; // Channel period.
+800020be:	76 28       	ld.w	r8,r11[0x8]
+800020c0:	f8 cc fd f8 	sub	r12,r12,-520
+800020c4:	99 08       	st.w	r12[0x0],r8
+800020c6:	5e fd       	retal	0
+
+  return PWM_SUCCESS;
+800020c8:	5e ff       	retal	1
+
+800020ca <pwm_start_channels>:
+}
+
+
+int pwm_start_channels(unsigned long channels_bitmask)
+{
+  if (channels_bitmask & ~((1 << (AVR32_PWM_LINES_MSB + 1)) - 1))
+800020ca:	18 98       	mov	r8,r12
+800020cc:	e0 18 ff 80 	andl	r8,0xff80
+800020d0:	c0 20       	breq	800020d4 <pwm_start_channels+0xa>
+800020d2:	5e ff       	retal	1
+    return PWM_INVALID_INPUT;
+
+  AVR32_PWM.ena = channels_bitmask; // Enable channels.
+800020d4:	fe 78 30 00 	mov	r8,-53248
+800020d8:	91 1c       	st.w	r8[0x4],r12
+800020da:	5e fd       	retal	0
+
+800020dc <pwm_init>:
+
+
+int pwm_init(const pwm_opt_t *opt)
+{
+  volatile avr32_pwm_t *pwm = &AVR32_PWM;
+  bool global_interrupt_enabled = Is_global_interrupt_enabled();
+800020dc:	e1 b8 00 00 	mfsr	r8,0x0
+
+  if (opt == 0 ) // Null pointer.
+800020e0:	58 0c       	cp.w	r12,0
+800020e2:	c0 21       	brne	800020e6 <pwm_init+0xa>
+800020e4:	5e ff       	retal	1
+    return PWM_INVALID_INPUT;
+
+  // Disable interrupt.
+  if (global_interrupt_enabled) Disable_global_interrupt();
+800020e6:	e6 18 00 01 	andh	r8,0x1,COH
+800020ea:	c0 91       	brne	800020fc <pwm_init+0x20>
+800020ec:	d3 03       	ssrf	0x10
+  pwm->idr = ((1 << (AVR32_PWM_LINES_MSB + 1)) - 1) << AVR32_PWM_IDR_CHID0_OFFSET;
+800020ee:	fe 78 30 00 	mov	r8,-53248
+800020f2:	37 f9       	mov	r9,127
+800020f4:	91 59       	st.w	r8[0x14],r9
+  pwm->isr;
+800020f6:	70 78       	ld.w	r8,r8[0x1c]
+  if (global_interrupt_enabled) Enable_global_interrupt();
+800020f8:	d5 03       	csrf	0x10
+800020fa:	c0 68       	rjmp	80002106 <pwm_init+0x2a>
+  if (opt == 0 ) // Null pointer.
+    return PWM_INVALID_INPUT;
+
+  // Disable interrupt.
+  if (global_interrupt_enabled) Disable_global_interrupt();
+  pwm->idr = ((1 << (AVR32_PWM_LINES_MSB + 1)) - 1) << AVR32_PWM_IDR_CHID0_OFFSET;
+800020fc:	fe 78 30 00 	mov	r8,-53248
+80002100:	37 f9       	mov	r9,127
+80002102:	91 59       	st.w	r8[0x14],r9
+  pwm->isr;
+80002104:	70 78       	ld.w	r8,r8[0x1c]
+  if (global_interrupt_enabled) Enable_global_interrupt();
+
+  // Set PWM mode register.
+  pwm->mr =
+    ((opt->diva)<<AVR32_PWM_DIVA_OFFSET) |
+80002106:	78 08       	ld.w	r8,r12[0x0]
+80002108:	78 39       	ld.w	r9,r12[0xc]
+8000210a:	a9 69       	lsl	r9,0x8
+8000210c:	f3 e8 11 09 	or	r9,r9,r8<<0x10
+80002110:	78 18       	ld.w	r8,r12[0x4]
+80002112:	10 49       	or	r9,r8
+80002114:	78 28       	ld.w	r8,r12[0x8]
+80002116:	f3 e8 11 89 	or	r9,r9,r8<<0x18
+  pwm->idr = ((1 << (AVR32_PWM_LINES_MSB + 1)) - 1) << AVR32_PWM_IDR_CHID0_OFFSET;
+  pwm->isr;
+  if (global_interrupt_enabled) Enable_global_interrupt();
+
+  // Set PWM mode register.
+  pwm->mr =
+8000211a:	fe 78 30 00 	mov	r8,-53248
+8000211e:	91 09       	st.w	r8[0x0],r9
+80002120:	5e fd       	retal	0
+80002122:	d7 03       	nop
+
+80002124 <_stext>:
+
+  .global _stext
+  .type _stext, @function
+_stext:
+  // Set initial stack pointer.
+  lda.w   sp, _estack
+80002124:	e0 7d 00 00 	mov	sp,65536
+
+  // Set up EVBA so interrupts can be enabled.
+  lda.w   r0, _evba
+  mtsr    AVR32_EVBA, r0
+80002128:	fe c0 ff 28 	sub	r0,pc,-216
+
+  // Enable the exception processing.
+  csrf    AVR32_SR_EM_OFFSET
+8000212c:	e3 b0 00 01 	mtsr	0x4,r0
+
+  // Load initialized data having a global lifetime from the data LMA.
+  lda.w   r0, _data
+  lda.w   r1, _edata
+80002130:	d5 53       	csrf	0x15
+  cp      r0, r1
+80002132:	30 80       	mov	r0,8
+  brhs    idata_load_loop_end
+80002134:	30 81       	mov	r1,8
+  lda.w   r2, _data_lma
+80002136:	02 30       	cp.w	r0,r1
+idata_load_loop:
+  ld.d    r4, r2++
+80002138:	c0 72       	brcc	80002146 <idata_load_loop_end>
+  st.d    r0++, r4
+8000213a:	fe c2 fc 9a 	sub	r2,pc,-870
+
+8000213e <idata_load_loop>:
+  cp      r0, r1
+  brlo    idata_load_loop
+8000213e:	a5 05       	ld.d	r4,r2++
+idata_load_loop_end:
+
+  // Clear uninitialized data having a global lifetime in the blank static storage section.
+  lda.w   r0, __bss_start
+80002140:	a1 24       	st.d	r0++,r4
+  lda.w   r1, _end
+80002142:	02 30       	cp.w	r0,r1
+  cp      r0, r1
+80002144:	cf d3       	brcs	8000213e <idata_load_loop>
+
+80002146 <idata_load_loop_end>:
+  brhs    udata_clear_loop_end
+80002146:	30 80       	mov	r0,8
+  mov     r2, 0
+80002148:	e0 61 00 f8 	mov	r1,248
+  mov     r3, 0
+udata_clear_loop:
+  st.d    r0++, r2
+8000214c:	02 30       	cp.w	r0,r1
+  cp      r0, r1
+8000214e:	c0 62       	brcc	8000215a <udata_clear_loop_end>
+  brlo    udata_clear_loop
+80002150:	30 02       	mov	r2,0
+  // Safety: Set the default "return" @ to the exit routine address.
+  lda.w   lr, exit
+#endif
+
+  // Start the show.
+  lda.w   pc, main
+80002152:	30 03       	mov	r3,0
+
+80002154 <udata_clear_loop>:
+80002154:	a1 22       	st.d	r0++,r2
+80002156:	02 30       	cp.w	r0,r1
+80002158:	cf e3       	brcs	80002154 <udata_clear_loop>
+
+8000215a <udata_clear_loop_end>:
+8000215a:	fe cf ff fa 	sub	pc,pc,-6
+8000215e:	d7 03       	nop
+
+80002160 <main>:
+#include <asf.h>
+#include "conf_example.h"
+
+/** \brief Main function. Execution starts here. */
+int main(void)
+{
+80002160:	eb cd 40 e0 	pushm	r5-r7,lr
+80002164:	20 cd       	sub	sp,48
+		{
+			.diva = AVR32_PWM_DIVA_CLK_OFF,
+			.divb = AVR32_PWM_DIVB_CLK_OFF,
+			.prea = AVR32_PWM_PREA_MCK,
+			.preb = AVR32_PWM_PREB_MCK
+		};
+80002166:	30 07       	mov	r7,0
+80002168:	50 87       	stdsp	sp[0x20],r7
+8000216a:	50 97       	stdsp	sp[0x24],r7
+8000216c:	50 a7       	stdsp	sp[0x28],r7
+8000216e:	50 b7       	stdsp	sp[0x2c],r7
+
+	/* PWM channel configuration structure. */
+	avr32_pwm_channel_t pwm_channel = { .ccnt = 0 };
+80002170:	32 0a       	mov	r10,32
+80002172:	0e 9b       	mov	r11,r7
+80002174:	1a 9c       	mov	r12,sp
+80002176:	f0 1f 00 0d 	mcall	800021a8 <main+0x48>
+	
+	/* With these settings, the output waveform period will be:
+	 * (115200/256)/20 == 22.5Hz == (MCK/prescaler)/period, with
+	 * MCK == 115200Hz, prescaler == 256, period == 20. */
+	pwm_channel.cdty = 5; /* Channel duty cycle, should be < CPRD. */
+8000217a:	30 58       	mov	r8,5
+8000217c:	50 18       	stdsp	sp[0x4],r8
+	pwm_channel.cprd = 20; /* Channel period. */
+8000217e:	31 48       	mov	r8,20
+80002180:	50 28       	stdsp	sp[0x8],r8
+	pwm_channel.cupd = 0; /* Channel update is not used here. */
+	pwm_channel.CMR.calg = PWM_MODE_LEFT_ALIGNED; /* Channel mode. */
+	pwm_channel.CMR.cpol = PWM_POLARITY_LOW;      /* Channel polarity. */
+	pwm_channel.CMR.cpd = PWM_UPDATE_DUTY;        /* Not used the first time. */
+	pwm_channel.CMR.cpre = AVR32_PWM_CPRE_MCK_DIV_256; /* Channel prescaler. */	
+80002182:	30 85       	mov	r5,8
+80002184:	50 05       	stdsp	sp[0x0],r5
+	
+	/* Enable the alternative mode of the output pin to connect it to the PWM
+	 * module within the device. */
+	gpio_enable_module_pin(EXAMPLE_PWM_PIN, EXAMPLE_PWM_FUNCTION);
+80002186:	0e 9b       	mov	r11,r7
+80002188:	33 6c       	mov	r12,54
+8000218a:	f0 1f 00 09 	mcall	800021ac <main+0x4c>
+
+	/* Initialize the PWM module. */
+	pwm_init(&pwm_opt);
+8000218e:	fa cc ff e0 	sub	r12,sp,-32
+80002192:	f0 1f 00 08 	mcall	800021b0 <main+0x50>
+
+	/* Set channel configuration to channel 0. */
+	pwm_channel_init(EXAMPLE_PWM_CHANNEL_ID, &pwm_channel);
+80002196:	1a 9b       	mov	r11,sp
+80002198:	30 3c       	mov	r12,3
+8000219a:	f0 1f 00 07 	mcall	800021b4 <main+0x54>
+
+	/* Start channel 0. */
+	pwm_start_channels(1 << EXAMPLE_PWM_CHANNEL_ID);
+8000219e:	0a 9c       	mov	r12,r5
+800021a0:	f0 1f 00 06 	mcall	800021b8 <main+0x58>
+800021a4:	c0 08       	rjmp	800021a4 <main+0x44>
+800021a6:	00 00       	add	r0,r0
+800021a8:	80 00       	ld.sh	r0,r0[0x0]
+800021aa:	21 bc       	sub	r12,27
+800021ac:	80 00       	ld.sh	r0,r0[0x0]
+800021ae:	20 08       	sub	r8,0
+800021b0:	80 00       	ld.sh	r0,r0[0x0]
+800021b2:	20 dc       	sub	r12,13
+800021b4:	80 00       	ld.sh	r0,r0[0x0]
+800021b6:	20 94       	sub	r4,9
+800021b8:	80 00       	ld.sh	r0,r0[0x0]
+800021ba:	20 ca       	sub	r10,12
+
+800021bc <memset>:
+800021bc:	18 98       	mov	r8,r12
+800021be:	c0 38       	rjmp	800021c4 <memset+0x8>
+800021c0:	10 cb       	st.b	r8++,r11
+800021c2:	20 1a       	sub	r10,1
+800021c4:	58 0a       	cp.w	r10,0
+800021c6:	cf d1       	brne	800021c0 <memset+0x4>
+800021c8:	5e fc       	retal	r12
+
+Disassembly of section .exception:
+
+80002200 <_evba>:
+_evba:
+
+	.org  0x000
+	// Unrecoverable Exception.
+_handle_Unrecoverable_Exception:
+	rjmp $
+80002200:	c0 08       	rjmp	80002200 <_evba>
+	...
+
+80002204 <_handle_TLB_Multiple_Hit>:
+
+	.org  0x004
+	// TLB Multiple Hit.
+_handle_TLB_Multiple_Hit:
+	rjmp $
+80002204:	c0 08       	rjmp	80002204 <_handle_TLB_Multiple_Hit>
+	...
+
+80002208 <_handle_Bus_Error_Data_Fetch>:
+
+	.org  0x008
+	// Bus Error Data Fetch.
+_handle_Bus_Error_Data_Fetch:
+	rjmp $
+80002208:	c0 08       	rjmp	80002208 <_handle_Bus_Error_Data_Fetch>
+	...
+
+8000220c <_handle_Bus_Error_Instruction_Fetch>:
+
+	.org  0x00C
+	// Bus Error Instruction Fetch.
+_handle_Bus_Error_Instruction_Fetch:
+	rjmp $
+8000220c:	c0 08       	rjmp	8000220c <_handle_Bus_Error_Instruction_Fetch>
+	...
+
+80002210 <_handle_NMI>:
+
+	.org  0x010
+	// NMI.
+_handle_NMI:
+	rjmp $
+80002210:	c0 08       	rjmp	80002210 <_handle_NMI>
+	...
+
+80002214 <_handle_Instruction_Address>:
+
+	.org  0x014
+	// Instruction Address.
+_handle_Instruction_Address:
+	rjmp $
+80002214:	c0 08       	rjmp	80002214 <_handle_Instruction_Address>
+	...
+
+80002218 <_handle_ITLB_Protection>:
+
+	.org  0x018
+	// ITLB Protection.
+_handle_ITLB_Protection:
+	rjmp $
+80002218:	c0 08       	rjmp	80002218 <_handle_ITLB_Protection>
+	...
+
+8000221c <_handle_Breakpoint>:
+
+	.org  0x01C
+	// Breakpoint.
+_handle_Breakpoint:
+	rjmp $
+8000221c:	c0 08       	rjmp	8000221c <_handle_Breakpoint>
+	...
+
+80002220 <_handle_Illegal_Opcode>:
+
+	.org  0x020
+	// Illegal Opcode.
+_handle_Illegal_Opcode:
+	rjmp $
+80002220:	c0 08       	rjmp	80002220 <_handle_Illegal_Opcode>
+	...
+
+80002224 <_handle_Unimplemented_Instruction>:
+
+	.org  0x024
+	// Unimplemented Instruction.
+_handle_Unimplemented_Instruction:
+	rjmp $
+80002224:	c0 08       	rjmp	80002224 <_handle_Unimplemented_Instruction>
+	...
+
+80002228 <_handle_Privilege_Violation>:
+
+	.org  0x028
+	// Privilege Violation.
+_handle_Privilege_Violation:
+	rjmp $
+80002228:	c0 08       	rjmp	80002228 <_handle_Privilege_Violation>
+	...
+
+8000222c <_handle_Floating_Point>:
+
+	.org  0x02C
+	// Floating-Point: UNUSED IN AVR32UC and AVR32AP.
+_handle_Floating_Point:
+	rjmp $
+8000222c:	c0 08       	rjmp	8000222c <_handle_Floating_Point>
+	...
+
+80002230 <_handle_Coprocessor_Absent>:
+
+	.org  0x030
+	// Coprocessor Absent: UNUSED IN AVR32UC.
+_handle_Coprocessor_Absent:
+	rjmp $
+80002230:	c0 08       	rjmp	80002230 <_handle_Coprocessor_Absent>
+	...
+
+80002234 <_handle_Data_Address_Read>:
+
+	.org  0x034
+	// Data Address (Read).
+_handle_Data_Address_Read:
+	rjmp $
+80002234:	c0 08       	rjmp	80002234 <_handle_Data_Address_Read>
+	...
+
+80002238 <_handle_Data_Address_Write>:
+
+	.org  0x038
+	// Data Address (Write).
+_handle_Data_Address_Write:
+	rjmp $
+80002238:	c0 08       	rjmp	80002238 <_handle_Data_Address_Write>
+	...
+
+8000223c <_handle_DTLB_Protection_Read>:
+
+	.org  0x03C
+	// DTLB Protection (Read).
+_handle_DTLB_Protection_Read:
+	rjmp $
+8000223c:	c0 08       	rjmp	8000223c <_handle_DTLB_Protection_Read>
+	...
+
+80002240 <_handle_DTLB_Protection_Write>:
+
+	.org  0x040
+	// DTLB Protection (Write).
+_handle_DTLB_Protection_Write:
+	rjmp $
+80002240:	c0 08       	rjmp	80002240 <_handle_DTLB_Protection_Write>
+	...
+
+80002244 <_handle_DTLB_Modified>:
+
+	.org  0x044
+	// DTLB Modified: UNUSED IN AVR32UC.
+_handle_DTLB_Modified:
+	rjmp $
+80002244:	c0 08       	rjmp	80002244 <_handle_DTLB_Modified>
+	...
+
+80002250 <_handle_ITLB_Miss>:
+
+	.org  0x050
+	// ITLB Miss.
+_handle_ITLB_Miss:
+	rjmp $
+80002250:	c0 08       	rjmp	80002250 <_handle_ITLB_Miss>
+	...
+
+80002260 <_handle_DTLB_Miss_Read>:
+
+	.org  0x060
+	// DTLB Miss (Read).
+_handle_DTLB_Miss_Read:
+	rjmp $
+80002260:	c0 08       	rjmp	80002260 <_handle_DTLB_Miss_Read>
+	...
+
+80002270 <_handle_DTLB_Miss_Write>:
+
+	.org  0x070
+	// DTLB Miss (Write).
+_handle_DTLB_Miss_Write:
+	rjmp $
+80002270:	c0 08       	rjmp	80002270 <_handle_DTLB_Miss_Write>
+	...
+
+80002300 <_handle_Supervisor_Call>:
+
+	.org  0x100
+	// Supervisor Call.
+_handle_Supervisor_Call:
+	rjmp $
+80002300:	c0 08       	rjmp	80002300 <_handle_Supervisor_Call>
+80002302:	d7 03       	nop
+
+80002304 <_int0>:
+	 * RSR_INTx by the CPU upon interrupt entry. No other register is saved
+	 * by hardware.
+	 */
+	pushm   r8-r12, lr
+#endif
+	// Pass the int_level parameter to the _get_interrupt_handler function.
+80002304:	30 0c       	mov	r12,0
+80002306:	ca be       	rcall	8000205c <_get_interrupt_handler>
+80002308:	58 0c       	cp.w	r12,0
+8000230a:	f8 0f 17 10 	movne	pc,r12
+8000230e:	d6 03       	rete
+
+80002310 <_int1>:
+	popm    r8-r12, lr
+#endif
+	/*
+	 * If this was a spurious interrupt (R12 == NULL), return from event
+	 * handler.
+	 */
+80002310:	30 1c       	mov	r12,1
+	 * RSR_INTx by the CPU upon interrupt entry. No other register is saved
+	 * by hardware.
+	 */
+	pushm   r8-r12, lr
+#endif
+	// Pass the int_level parameter to the _get_interrupt_handler function.
+80002312:	ca 5e       	rcall	8000205c <_get_interrupt_handler>
+80002314:	58 0c       	cp.w	r12,0
+80002316:	f8 0f 17 10 	movne	pc,r12
+8000231a:	d6 03       	rete
+
+8000231c <_int2>:
+8000231c:	30 2c       	mov	r12,2
+	popm    r8-r12, lr
+#endif
+	/*
+	 * If this was a spurious interrupt (R12 == NULL), return from event
+	 * handler.
+	 */
+8000231e:	c9 fe       	rcall	8000205c <_get_interrupt_handler>
+	 * RSR_INTx by the CPU upon interrupt entry. No other register is saved
+	 * by hardware.
+	 */
+	pushm   r8-r12, lr
+#endif
+	// Pass the int_level parameter to the _get_interrupt_handler function.
+80002320:	58 0c       	cp.w	r12,0
+80002322:	f8 0f 17 10 	movne	pc,r12
+80002326:	d6 03       	rete
+
+80002328 <_int3>:
+80002328:	30 3c       	mov	r12,3
+8000232a:	c9 9e       	rcall	8000205c <_get_interrupt_handler>
+	popm    r8-r12, lr
+#endif
+	/*
+	 * If this was a spurious interrupt (R12 == NULL), return from event
+	 * handler.
+	 */
+8000232c:	58 0c       	cp.w	r12,0
+	 * RSR_INTx by the CPU upon interrupt entry. No other register is saved
+	 * by hardware.
+	 */
+	pushm   r8-r12, lr
+#endif
+	// Pass the int_level parameter to the _get_interrupt_handler function.
+8000232e:	f8 0f 17 10 	movne	pc,r12
+80002332:	d6 03       	rete
+80002334:	d7 03       	nop
+80002336:	d7 03       	nop
+80002338:	d7 03       	nop
+	popm    r8-r12, lr
+#endif
+	/*
+	 * If this was a spurious interrupt (R12 == NULL), return from event
+	 * handler.
+	 */
+8000233a:	d7 03       	nop
+8000233c:	d7 03       	nop
+8000233e:	d7 03       	nop
+80002340:	d7 03       	nop
+80002342:	d7 03       	nop
+80002344:	d7 03       	nop
+80002346:	d7 03       	nop
+80002348:	d7 03       	nop
+8000234a:	d7 03       	nop
+8000234c:	d7 03       	nop
+8000234e:	d7 03       	nop
+80002350:	d7 03       	nop
+80002352:	d7 03       	nop
+80002354:	d7 03       	nop
+80002356:	d7 03       	nop
+80002358:	d7 03       	nop
+8000235a:	d7 03       	nop
+8000235c:	d7 03       	nop
+8000235e:	d7 03       	nop
+80002360:	d7 03       	nop
+80002362:	d7 03       	nop
+80002364:	d7 03       	nop
+80002366:	d7 03       	nop
+80002368:	d7 03       	nop
+8000236a:	d7 03       	nop
+8000236c:	d7 03       	nop
+8000236e:	d7 03       	nop
+80002370:	d7 03       	nop
+80002372:	d7 03       	nop
+80002374:	d7 03       	nop
+80002376:	d7 03       	nop
+80002378:	d7 03       	nop
+8000237a:	d7 03       	nop
+8000237c:	d7 03       	nop
+8000237e:	d7 03       	nop
+80002380:	d7 03       	nop
+80002382:	d7 03       	nop
+80002384:	d7 03       	nop
+80002386:	d7 03       	nop
+80002388:	d7 03       	nop
+8000238a:	d7 03       	nop
+8000238c:	d7 03       	nop
+8000238e:	d7 03       	nop
+80002390:	d7 03       	nop
+80002392:	d7 03       	nop
+80002394:	d7 03       	nop
+80002396:	d7 03       	nop
+80002398:	d7 03       	nop
+8000239a:	d7 03       	nop
+8000239c:	d7 03       	nop
+8000239e:	d7 03       	nop
+800023a0:	d7 03       	nop
+800023a2:	d7 03       	nop
+800023a4:	d7 03       	nop
+800023a6:	d7 03       	nop
+800023a8:	d7 03       	nop
+800023aa:	d7 03       	nop
+800023ac:	d7 03       	nop
+800023ae:	d7 03       	nop
+800023b0:	d7 03       	nop
+800023b2:	d7 03       	nop
+800023b4:	d7 03       	nop
+800023b6:	d7 03       	nop
+800023b8:	d7 03       	nop
+800023ba:	d7 03       	nop
+800023bc:	d7 03       	nop
+800023be:	d7 03       	nop
+800023c0:	d7 03       	nop
+800023c2:	d7 03       	nop
+800023c4:	d7 03       	nop
+800023c6:	d7 03       	nop
+800023c8:	d7 03       	nop
+800023ca:	d7 03       	nop
+800023cc:	d7 03       	nop
+800023ce:	d7 03       	nop
+800023d0:	d7 03       	nop
+800023d2:	d7 03       	nop
+800023d4:	d7 03       	nop
+800023d6:	d7 03       	nop
+800023d8:	d7 03       	nop
+800023da:	d7 03       	nop
+800023dc:	d7 03       	nop
+800023de:	d7 03       	nop
+800023e0:	d7 03       	nop
+800023e2:	d7 03       	nop
+800023e4:	d7 03       	nop
+800023e6:	d7 03       	nop
+800023e8:	d7 03       	nop
+800023ea:	d7 03       	nop
+800023ec:	d7 03       	nop
+800023ee:	d7 03       	nop
+800023f0:	d7 03       	nop
+800023f2:	d7 03       	nop
+800023f4:	d7 03       	nop
+800023f6:	d7 03       	nop
+800023f8:	d7 03       	nop
+800023fa:	d7 03       	nop
+800023fc:	d7 03       	nop
+800023fe:	d7 03       	nop

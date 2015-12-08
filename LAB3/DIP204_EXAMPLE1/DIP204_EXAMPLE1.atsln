@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "DIP204_EXAMPLE1", "DIP204_EXAMPLE1\DIP204_EXAMPLE1.cproj", "{E0B7D316-BA18-463C-A241-F4E23E662752}"
+EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "LAB3_CAN", "..\LAB3_CAN\LAB3_CAN.cproj", "{2EA2BC27-6AEC-4EE5-BC99-5234D96CD49B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E0B7D316-BA18-463C-A241-F4E23E662752}.Debug|AVR.ActiveCfg = Debug|AVR
+		{E0B7D316-BA18-463C-A241-F4E23E662752}.Debug|AVR.Build.0 = Debug|AVR
+		{E0B7D316-BA18-463C-A241-F4E23E662752}.Release|AVR.ActiveCfg = Release|AVR
+		{E0B7D316-BA18-463C-A241-F4E23E662752}.Release|AVR.Build.0 = Release|AVR
+		{2EA2BC27-6AEC-4EE5-BC99-5234D96CD49B}.Debug|AVR.ActiveCfg = Debug|AVR
+		{2EA2BC27-6AEC-4EE5-BC99-5234D96CD49B}.Debug|AVR.Build.0 = Debug|AVR
+		{2EA2BC27-6AEC-4EE5-BC99-5234D96CD49B}.Release|AVR.ActiveCfg = Release|AVR
+		{2EA2BC27-6AEC-4EE5-BC99-5234D96CD49B}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
