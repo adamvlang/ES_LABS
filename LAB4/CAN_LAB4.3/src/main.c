@@ -20,6 +20,9 @@ UINT16 divid = 1023;
 
 UINT32 Ident;
 
+UINT32 readPot, readLight, readTemp;
+UINT16 potMSB, potLSB, lightMSB, lightLSB, tempMSB, tempLSB;
+
 int main(void) {
 	
 	//spidatareadpointer=&spidataread;
@@ -46,10 +49,11 @@ int main(void) {
 	UINT16 Flt[] = {flt,flt,flt,flt,flt,flt};
 	InitializeCANExtended(0, CAN_250kbps, Mask, Flt);
 	
-
+	adc_enable( &AVR32_ADC, ADC_POTENTIOMETER_CHANNEL );
 
 	while(1){
 		
+		adc_start(&AVR32_ADC);
 		//Clear memory contents
 		ClearMessages(msg);
 		//Read any message available
@@ -63,9 +67,9 @@ int main(void) {
 					temper = ((UINT16)msg[0] << 8) | msg[1];
 					
 					//Calculate percentages
-					lightPro = ((100*light)/divid);
+					lightPro = (100*light)/divid;
 					temperPro = (100*temper)/divid;
-					potPro = (100*msg[5])/255;
+					potPro = (100*msg[5])/divid;
 					
 					
 					dip204_clear_display();
@@ -104,16 +108,28 @@ int main(void) {
 		
 		if(CANTxReady(0))
 		{
-			msg[0] = 0;
-			msg[1] = 0;
-			msg[2] = 0;
-			msg[3] = 100;
+			//Reading ADC channels
+			readLight = adc_get_value(&AVR32_ADC, ADC_LIGHT_CHANNEL);
+			readTemp = adc_get_value(&AVR32_ADC, ADC_TEMPERATURE_CHANNEL);
+			
+			//Setting MSB and LSB for the ADC channels, to be able to send over CAN			
+			lightMSB = (readLight >> 8) & 0x00000003;
+			lightLSB = readLight & 0x000000FF;
+			
+			tempMSB = (readTemp >> 8) & 0x00000003;
+			tempLSB = readTemp & 0x000000FF;
+			
+			
+			msg[0] = tempMSB;
+			msg[1] = tempLSB;
+			msg[2] = lightMSB;
+			msg[3] = lightLSB;
 			msg[4] = 0;
 			msg[5] = 0;
 			msg[6] = 0;
 			msg[7] = 0;
 			
-			CANSendMsg(0, 0x120F, msg, 8, 0);
+			CANSendMsg(0, 0x120E, msg, 8, 0);
 			delay_ms(1000);
 		}
 	}
