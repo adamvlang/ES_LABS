@@ -13,9 +13,12 @@ CAN example
 #define CAN_250kbps 7
 #define CAN_125kbps 10
 
-UINT32 Ident;
 UINT8 msg[8], mSize;
-UINT16 light;
+UINT16 light, temper;
+UINT16 lightPro, temperPro, potPro;
+UINT16 divid = 1023;
+
+UINT32 Ident;
 
 int main(void) {
 	
@@ -39,11 +42,11 @@ int main(void) {
 	dip204_clear_display();
 	
 	UINT16 Mask = 0xF000; 
-	UINT16 flt = 0x2000;
+	UINT16 flt = 0x1000;
 	UINT16 Flt[] = {flt,flt,flt,flt,flt,flt};
 	InitializeCANExtended(0, CAN_250kbps, Mask, Flt);
 	
-	
+
 
 	while(1){
 		
@@ -53,9 +56,17 @@ int main(void) {
 		if(CANRxReady(0)){
 			if( CANGetMsg(0, &Ident, msg, &mSize )) // Gets message and returns //TRUE if message received.
 			{	
-					// Read light, 2 most sig byte 2, 8 least sig byte 3
+					// Read light, 2 MSB msg[2], 8 LSB msg[3]
 					light = (((UINT16)msg[2]) << 8 ) | msg[3];
-					// Read temp
+					
+					// Read temp, 2 MSB msg[0], 8 LSB msg[1]
+					temper = ((UINT16)msg[0] << 8) | msg[1];
+					
+					//Calculate percentages
+					lightPro = ((100*light)/divid);
+					temperPro = (100*temper)/divid;
+					potPro = (100*msg[5])/255;
+					
 					
 					dip204_clear_display();
 					dip204_set_cursor_position(1, 1);
@@ -66,25 +77,25 @@ int main(void) {
 					dip204_printf_string("Light:");
 					dip204_set_cursor_position(1, 4);
 					dip204_printf_string("Pot:");
-					dip204_set_cursor_position(13, 2);
+					dip204_set_cursor_position(12, 2);
 					dip204_printf_string("Abs:");
-					dip204_set_cursor_position(13, 3);
+					dip204_set_cursor_position(12, 3);
 					dip204_printf_string("Abs:");
-					dip204_set_cursor_position(13, 4);
+					dip204_set_cursor_position(12, 4);
 					dip204_printf_string("Abs:");
-					dip204_set_cursor_position(9, 1);
+					dip204_set_cursor_position(8, 1);
 					dip204_printf_string("%x", Ident);
-					dip204_set_cursor_position(9, 2);
-					dip204_printf_string("%d", msg[1]);
-					dip204_set_cursor_position(9, 3);
+					dip204_set_cursor_position(8, 2);
+					dip204_printf_string("%d", temperPro);
+					dip204_set_cursor_position(8, 3);
+					dip204_printf_string("%d", lightPro);
+					dip204_set_cursor_position(8, 4);
+					dip204_printf_string("%d", potPro);
+					dip204_set_cursor_position(17, 2);
+					dip204_printf_string("%d", temper);
+					dip204_set_cursor_position(17, 3);
 					dip204_printf_string("%d", light);
-					dip204_set_cursor_position(9, 4);
-					dip204_printf_string("%d", msg[5]);
-					dip204_set_cursor_position(18, 2);
-					dip204_printf_string("%x", msg[2]);
-					dip204_set_cursor_position(18, 3);
-					dip204_printf_string("%x", msg[3]);
-					dip204_set_cursor_position(18, 4);
+					dip204_set_cursor_position(17, 4);
 					dip204_printf_string("%d", msg[5]);
 					dip204_hide_cursor();
 			}
