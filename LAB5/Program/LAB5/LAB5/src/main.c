@@ -5,20 +5,22 @@ static void software_delay(void){
 	for (i=0; i<1000000; i++);
 }
 
-int main (void)
+int part1 (void)
 {
-	// Insert system clock initialization code here (sysclk_init()).
-
-	board_init();
 	int state = 0;
 
 	// Parameters, change these for different clock freqs
+	// 2 MHz -> 3 0 1 3
 	// 12MHz -> 3 0 1 1
+	// 33 MHz -> 10 1 1 0
+	// 48 MHz -> 15 1 1 0
+	// 66 MHz -> 10 1 0 0
 	
-	int PLLMUL = 3; 
-	int PLLDIV = 0;
+	int PLLMUL = 15
+	; 
+	int PLLDIV = 1;
 	int PLLDIV2 = 1;
-	int CPUSEL = 1;
+	int CPUSEL = 0;
 
 	// Setup clock speed
 	pm_switch_to_osc0(&AVR32_PM, FOSC0, OSC0_STARTUP);
@@ -55,4 +57,20 @@ int main (void)
 		software_delay();
 		
 	}
+	return 0;
+}
+
+void part2(){
+	
+}
+
+int main(void) {
+	board_init();
+	// Manually define clock settings
+	part1();
+	// Using support functions
+	part2();
+	
+	return 0;
+	
 }

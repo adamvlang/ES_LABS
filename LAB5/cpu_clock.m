@@ -14,12 +14,12 @@ clear all; close all; clc;
 %% Parameters
 % Define parameters
 % F_VCO
-PLLMUL=3; 
-PLLDIV=0;
+PLLMUL=10; 
+PLLDIV=1;
 % F_PLL
-PLLDIV2=1;
+PLLDIV2=0;
 % F_CPU
-CPUSEL=1;
+CPUSEL=0;
 
 % Predifined
 fosc0=12e6;     % Oscillator frequency [Hz]
