@@ -272,7 +272,8 @@ extern long int pcl_configure_clocks_osc0(pcl_freq_param_t *param);
  *  - dfll_f is the target DFLL frequency to set-up
  *
  * \note: when the DFLL0 is to be used as main source clock for the synchronous clocks,
- *  the target frequency of the DFLL should be chosen to be as high as possible
+ *  the target frequency of the DFL
+ L should be chosen to be as high as possible
  *  within the specification range (for stability reasons); the target cpu and pbx
  *  frequencies will then be reached by appropriate division ratio.
  *
