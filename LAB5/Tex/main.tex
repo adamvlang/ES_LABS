@@ -1,0 +1,95 @@
+\documentclass[10pt, a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{float}
+\usepackage{listings}
+
+
+\begin{document}
+\lstset{language=C,
+        breaklines=true
+        }
+\section{Test clock settings}
+\begin{table}[H]
+\centering
+\begin{tabular}{l l l l l l}
+Clock Settings [MHz] & 2 & 12 & 33 & 48 & 66 \\
+\hline
+PLL Frequency [MHz]  & 48 & 48  & 66 & 96 & 132\\
+\hline
+PLLMUL & 3 & 3 & 10 & 15 & 10 \\
+\hline
+PLLDIV& 0 & 0 & 1 & 1 & 1 \\
+\hline
+PLL\_FREQ [MHz]& 48 & 48 & 66 & 96 & 132 \\
+\hline
+PLL\_DIV2& 1 & 1 & 1 & 1 & 0 \\
+\hline
+PBADIV& 1 & 1 & 1& 1 & 1\\
+\hline
+PBASEL& 0 & 0 & 0 & 0 & 0\\
+\hline
+PBBDIV& 1 & 1 & 1 & 1 & 1 \\
+\hline
+PBBSEL& 0 & 0 & 0 & 0 & 0\\
+\hline
+HSBDIV& 1 & 1 & 1 & 1 & 1\\
+\hline
+HSBSEL (CPUSEL)& 3 & 1 & 0 & 0 & 0\\
+\hline
+Works as expected?& Yes & Yes & Yes & Yes & \\
+\hline
+Approximate blinking freq. [Hz]& 1/4 & 1  & 3 & 4 & 5 \\
+\hline
+Measured power consumption [mW] & 515 & 545 & 620 & 680 & 730 \\
+\hline
+
+\end{tabular}
+\end{table}
+
+
+\textbf{Conclusion}\newline
+Power consumtion and blink frequency seems to be increasing proportionally to the clock frequency.
+\section{Using support functions}
+\textbf{a.} The Slow Clock is called $RCSYS$ in the header file. It is called
+from the function $pcl\_configure\_clocks\_rcsys(pc\_freq\_param\_t *param)$. \newline
+\textbf{b.} The struct has definition
+\begin{lstlisting}{frame=single}
+
+typedef struct
+{
+  //! Main clock source selection (input argument).
+  pcl_mainclk_t main_clk_src;
+
+  //! Target CPU frequency (input/output argument).
+  unsigned long cpu_f;
+
+  //! Target PBA frequency (input/output argument).
+  unsigned long pba_f;
+
+  //! Target PBB frequency (input/output argument).
+  unsigned long pbb_f;
+
+  //! Target PBC frequency (input/output argument).
+  unsigned long pbc_f;
+
+  //! Oscillator 0's external crystal(or external clock) frequency (board dependant) (input argument).
+  unsigned long osc0_f;
+
+  //! Oscillator 0's external crystal(or external clock) startup time: AVR32_PM_OSCCTRL0_STARTUP_x_RCOSC (input argument).
+  unsigned long osc0_startup;
+
+  //! DFLL target frequency (input/output argument) (NOTE: the bigger, the most stable the frequency)
+  unsigned long dfll_f;
+
+  //! Other parameters that might be necessary depending on the device (implementation-dependent).
+  // For the UC3L DFLL setup, this parameter should be pointing to a structure of
+  // type (scif_gclk_opt_t *).
+  void *pextra_params;
+} pcl_freq_param_t;
+
+\end{lstlisting}
+
+
+\end{document}
