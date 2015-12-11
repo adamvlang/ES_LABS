@@ -28,12 +28,6 @@ struct frame
 
 }nFrame[15];
 
-static const struct x EmptyStruct;
-{
-	UINT16 ID;
-	UINT8 mssg[8];
-};
-
 void readADC(void)
 {
 	UINT32 readPot, readLight, readTemp;
@@ -52,10 +46,10 @@ void readADC(void)
 	tempMSB = (readTemp >> 8) & 0x00000003;
 	tempLSB = readTemp & 0x000000FF;
 	
-	nFrame[0x00F & ownId].mssg[0] = lightMSB;
-	nFrame[0x00F & ownId].mssg[1] = lightLSB;
-	nFrame[0x00F & ownId].mssg[2] = tempMSB;
-	nFrame[0x00F & ownId].mssg[3] = tempLSB;
+	nFrame[0x00F & ownId].mssg[0] = tempMSB;
+	nFrame[0x00F & ownId].mssg[1] = tempLSB;
+	nFrame[0x00F & ownId].mssg[2] = lightMSB;
+	nFrame[0x00F & ownId].mssg[3] = lightLSB;
 	nFrame[0x00F & ownId].mssg[4] = 0;
 	nFrame[0x00F & ownId].mssg[5] = 0;
 	nFrame[0x00F & ownId].mssg[6] = 0;
@@ -85,13 +79,13 @@ void ownADC(void)
 UINT8 nodeCount(void)
 {
 	UINT8 l;
-	
 	ids = 0;
 
 	for(int j = 0; j < 16 ; ++j)
 	{
 		//Adds any new nodes to its corresponding position in nodeCount bit seq.
 		ids |= (1 << (nFrame[j].ID & 0x000F));
+
 		UINT16 ids_new = ids;
 		//If counts the number of nodes active within ~1000 ms
 		ids_new &= ((ids_new >> j) & 0x01);
@@ -102,21 +96,16 @@ UINT8 nodeCount(void)
 			++l;
 		}
 	}
-	//If the board itself is active on the bus we add 1
-	if(CANRxReady(0) || CANTxReady(0))
-	{
-		++l;
-	}
-
 	return l;
 	
 }
 
 __attribute__((__interrupt__)) static void interrupt(void)
 {
+		
+	struct frame nFrame;
 
-	interrupt(switch1);
-	
+	rtc_clear_interrupt(&AVR32_RTC);
 }
 
 void average(void)
@@ -130,9 +119,9 @@ void average(void)
 		lighttot += ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]);
 		tempertot += ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]);
 	}
-	dip204_set_cursor_position(15, 2);
-	dip204_printf_string("%d",  (tempertot/actNodes));
 	dip204_set_cursor_position(15, 3);
+	dip204_printf_string("%d",  (tempertot/actNodes));
+	dip204_set_cursor_position(15, 2);
 	dip204_printf_string("%d",  (lighttot/actNodes));
 }
 
@@ -140,13 +129,13 @@ void printLCD(void)
 {					
 	dip204_set_cursor_position(1, 1);
 	dip204_printf_string("Active nodes:");
-	dip204_set_cursor_position(1, 2);
-	dip204_printf_string("O T:");
-	dip204_set_cursor_position(10, 2);
-	dip204_printf_string("A T:");
 	dip204_set_cursor_position(1, 3);
-	dip204_printf_string("O L:");
+	dip204_printf_string("O T:");
 	dip204_set_cursor_position(10, 3);
+	dip204_printf_string("A T:");
+	dip204_set_cursor_position(1, 2);
+	dip204_printf_string("O L:");
+	dip204_set_cursor_position(10, 2);
 	dip204_printf_string("A L:");
 	dip204_set_cursor_position(15, 1);
 	dip204_printf_string("%d", nodeCount());
@@ -166,7 +155,16 @@ void initBoard(void)
 	// Enables receive interrupts.
 	Disable_global_interrupt();
 	INTC_init_interrupts();
-	Enable_global_interrupt();
+
+	// Register the RTC interrupt handler to the interrupt controller.
+	INTC_register_interrupt(&interrupt, AVR32_RTC_IRQ, AVR32_INTC_INT0);
+	rtc_init(&AVR32_RTC, RTC_OSC_32KHZ, 14);
+	// Set top value to 0 to generate an interrupt every seconds */
+	rtc_set_top_value(&AVR32_RTC, 0);
+	// Enable the interrupts
+	rtc_enable_interrupt(&AVR32_RTC);
+	// Enable the RTC
+	rtc_enable(&AVR32_RTC);
 	
 	// Delay to let the Oscillator get started
 	delay_init( FOSC0 );
@@ -211,15 +209,15 @@ int main(void) {
 		if(CANTxReady(0))
 		{
 			//readADC();
-			CANSendMsg(0, 0x1202, msg, 8, 0);
+			CANSendMsg(0, ownId, nFrame[0x00F & ownId].mssg, 8, 0);
 			delay_ms(1000);
 		}
 		
 		dip204_clear_display();
 		printLCD();
 		ownADC();
-		nodeCount();
 		average();
+		nodeCount();
 		dip204_hide_cursor();
 		
 		

@@ -4,6 +4,8 @@
 
 src\ASF\avr32\drivers\adc\adc.c
 
+src\ASF\avr32\drivers\rtc\rtc.c
+
 src\CAN\can.c
 
 src\main.c

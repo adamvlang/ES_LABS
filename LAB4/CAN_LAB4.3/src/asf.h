@@ -101,5 +101,5 @@
 
 // From module: System Clock Control - UC3 A implementation
 #include <sysclk.h>
-
+#include <adc.h>
 #endif // ASF_H
