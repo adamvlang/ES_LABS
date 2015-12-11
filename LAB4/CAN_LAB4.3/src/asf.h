@@ -93,13 +93,13 @@
 // From module: Part identification macros
 #include <parts.h>
 
+// From module: RTC - Real Time Counter
+#include <rtc.h>
+
 // From module: SPI - Serial Peripheral Interface
 #include <spi.h>
 
 // From module: System Clock Control - UC3 A implementation
 #include <sysclk.h>
-
-//Import ADC drivers
-#include <adc.h>
 
 #endif // ASF_H
