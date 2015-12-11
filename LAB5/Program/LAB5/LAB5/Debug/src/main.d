@@ -1,4 +1,5 @@
 src/main.d src/main.o src/main.o: ../src/main.c ../src/asf.h \
+ ../src/ASF/avr32/drivers/cpu/cycle_counter/cycle_counter.h \
  ../src/ASF/avr32/utils/compiler.h \
  ../src/ASF/avr32/utils/preprocessor/preprocessor.h \
  ../src/ASF/avr32/utils/preprocessor/tpaste.h \
@@ -57,16 +58,30 @@ src/main.d src/main.o src/main.o: ../src/main.c ../src/asf.h \
  ../src/ASF/avr32/utils/preprocessor/tpaste.h \
  ../src/ASF/avr32/drivers/intc/intc.h \
  ../src/ASF/avr32/utils/status_codes.h \
- ../src/ASF/avr32/boards/evk1100/led.h \
- ../src/ASF/avr32/drivers/flashc/flashc.h \
- ../src/ASF/avr32/drivers/gpio/gpio.h ../src/ASF/common/boards/board.h \
+ ../src/ASF/common/services/delay/delay.h \
+ ../src/ASF/common/services/clock/sysclk.h ../src/config/conf_clock.h \
+ ../src/ASF/common/services/clock/uc3a0_a1/sysclk.h \
+ ../src/ASF/common/boards/board.h \
  ../src/ASF/avr32/boards/evk1100/evk1100.h \
  ../src/ASF/avr32/boards/evk1100/led.h \
+ ../src/ASF/common/services/clock/osc.h \
+ ../src/ASF/common/services/clock/uc3a0_a1/osc.h \
+ ../src/ASF/common/services/clock/pll.h \
+ ../src/ASF/common/services/clock/uc3a0_a1/pll.h \
+ ../src/ASF/common/services/clock/genclk.h \
+ ../src/ASF/common/services/clock/uc3a0_a1/genclk.h \
+ ../src/ASF/avr32/boards/evk1100/led.h \
+ ../src/ASF/avr32/drivers/flashc/flashc.h \
+ ../src/ASF/avr32/drivers/gpio/gpio.h \
+ ../src/ASF/avr32/components/display/dip204/dip204.h \
  ../src/ASF/avr32/drivers/pm/power_clocks_lib.h \
  ../src/ASF/avr32/drivers/pm/pm.h ../src/ASF/avr32/drivers/pm/sleep.h \
- ../src/ASF/avr32/drivers/rtc/rtc.h
+ ../src/ASF/avr32/drivers/pwm/pwm.h ../src/ASF/avr32/drivers/rtc/rtc.h \
+ ../src/ASF/avr32/drivers/spi/spi.h
 
 ../src/asf.h:
+
+../src/ASF/avr32/drivers/cpu/cycle_counter/cycle_counter.h:
 
 ../src/ASF/avr32/utils/compiler.h:
 
@@ -184,11 +199,13 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32
 
 ../src/ASF/avr32/utils/status_codes.h:
 
-../src/ASF/avr32/boards/evk1100/led.h:
+../src/ASF/common/services/delay/delay.h:
 
-../src/ASF/avr32/drivers/flashc/flashc.h:
+../src/ASF/common/services/clock/sysclk.h:
 
-../src/ASF/avr32/drivers/gpio/gpio.h:
+../src/config/conf_clock.h:
+
+../src/ASF/common/services/clock/uc3a0_a1/sysclk.h:
 
 ../src/ASF/common/boards/board.h:
 
@@ -196,10 +213,34 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32
 
 ../src/ASF/avr32/boards/evk1100/led.h:
 
+../src/ASF/common/services/clock/osc.h:
+
+../src/ASF/common/services/clock/uc3a0_a1/osc.h:
+
+../src/ASF/common/services/clock/pll.h:
+
+../src/ASF/common/services/clock/uc3a0_a1/pll.h:
+
+../src/ASF/common/services/clock/genclk.h:
+
+../src/ASF/common/services/clock/uc3a0_a1/genclk.h:
+
+../src/ASF/avr32/boards/evk1100/led.h:
+
+../src/ASF/avr32/drivers/flashc/flashc.h:
+
+../src/ASF/avr32/drivers/gpio/gpio.h:
+
+../src/ASF/avr32/components/display/dip204/dip204.h:
+
 ../src/ASF/avr32/drivers/pm/power_clocks_lib.h:
 
 ../src/ASF/avr32/drivers/pm/pm.h:
 
 ../src/ASF/avr32/drivers/pm/sleep.h:
 
+../src/ASF/avr32/drivers/pwm/pwm.h:
+
 ../src/ASF/avr32/drivers/rtc/rtc.h:
+
+../src/ASF/avr32/drivers/spi/spi.h:

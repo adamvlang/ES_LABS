@@ -17,11 +17,16 @@ UINT8 msg[8], mSize;
 
 UINT16 ids;
 
-UINT16 divid = 1023;
+UINT16 ownId = 0x1202;
 
 UINT32 Ident;
 
-int i;
+struct frame
+{
+	UINT16 ID;
+	UINT8 mssg[8];
+
+}nFrame[15];
 
 void readADC(void)
 {
@@ -41,59 +46,99 @@ void readADC(void)
 	tempMSB = (readTemp >> 8) & 0x00000003;
 	tempLSB = readTemp & 0x000000FF;
 	
-	msg[0] = lightMSB;
-	msg[1] = lightLSB;
-	msg[2] = tempMSB;
-	msg[3] = tempLSB;
-	msg[4] = 0;
-	msg[5] = 0;
-	msg[6] = 0;
-	msg[7] = 0;
+	nFrame[0x00F & ownId].mssg[0] = tempMSB;
+	nFrame[0x00F & ownId].mssg[1] = tempLSB;
+	nFrame[0x00F & ownId].mssg[2] = lightMSB;
+	nFrame[0x00F & ownId].mssg[3] = lightLSB;
+	nFrame[0x00F & ownId].mssg[4] = 0;
+	nFrame[0x00F & ownId].mssg[5] = 0;
+	nFrame[0x00F & ownId].mssg[6] = 0;
+	nFrame[0x00F & ownId].mssg[7] = 0;
+}
+
+void ownADC(void)
+{
+	UINT16 light = 0;
+	UINT16 temper= 0;
+	
+	readADC();
+
+	// Read light, 2 MSB msg[2], 8 LSB msg[3]
+	light = (((UINT16)nFrame[0x00F & ownId].mssg[2]) << 8 ) | nFrame[0x00F & ownId].mssg[3];
+	
+	// Read temp, 2 MSB msg[0], 8 LSB msg[1]
+	temper = (((UINT16)nFrame[0x00F & ownId].mssg[0]) << 8 ) | nFrame[0x00F & ownId].mssg[1];
+	
+	dip204_set_cursor_position(6, 2);
+	dip204_printf_string("%d", light);
+	dip204_set_cursor_position(6, 3);
+	dip204_printf_string("%d", temper);
 
 }
 
-void printLCD(void)
+UINT8 nodeCount(void)
 {
-	UINT16 light, temper;
-	UINT16 lightPro, temperPro;
-	// Read light, 2 MSB msg[2], 8 LSB msg[3]
-	light = (((UINT16)msg[2]) << 8 ) | msg[3];
-						
-	// Read temp, 2 MSB msg[0], 8 LSB msg[1]
-	temper = ((UINT16)msg[0] << 8) | msg[1];
-						
-	//Calculate percentages
-	lightPro = (100*light)/divid;
-	temperPro = (100*temper)/divid;
-								
-	dip204_clear_display();
+	UINT8 l;
+	ids = 0;
+
+	for(int j = 0; j < 16 ; ++j)
+	{
+		//Adds any new nodes to its corresponding position in nodeCount bit seq.
+		ids |= (1 << (nFrame[j].ID & 0x000F));
+
+		UINT16 ids_new = ids;
+		//If counts the number of nodes active within ~1000 ms
+		ids_new &= ((ids_new >> j) & 0x01);
+
+		//If there was a node found at the j'th bit 1 is added to l
+		if(ids_new == 1)
+		{
+			++l;
+		}
+	}
+	return l;
+	
+}
+
+__attribute__((__interrupt__)) static void interrupt(void)
+{
+		
+	struct frame nFrame;
+
+	rtc_clear_interrupt(&AVR32_RTC);
+}
+
+void average(void)
+{
+	UINT16 lighttot= 0; 
+	UINT16 tempertot = 0;
+	UINT16 actNodes = nodeCount();
+
+	for(int i = 0; i < 16; ++i)
+	{
+		lighttot += ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]);
+		tempertot += ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]);
+	}
+	dip204_set_cursor_position(15, 3);
+	dip204_printf_string("%d",  (tempertot/actNodes));
+	dip204_set_cursor_position(15, 2);
+	dip204_printf_string("%d",  (lighttot/actNodes));
+}
+
+void printLCD(void)
+{					
 	dip204_set_cursor_position(1, 1);
 	dip204_printf_string("Active nodes:");
-	dip204_set_cursor_position(1, 2);
-	dip204_printf_string("Temp:");
 	dip204_set_cursor_position(1, 3);
-	dip204_printf_string("Light:");
-	dip204_set_cursor_position(1, 4);
-	dip204_printf_string("# msg:");
-	dip204_set_cursor_position(12, 2);
-	dip204_printf_string("Abs:");
-	dip204_set_cursor_position(12, 3);
-	dip204_printf_string("Abs:");
-	dip204_set_cursor_position(12, 4);
-	dip204_printf_string("Abs:");
-	dip204_set_cursor_position(8, 2);
-	dip204_printf_string("%d", temperPro);
-	dip204_set_cursor_position(8, 3);
-	dip204_printf_string("%d", lightPro);
-	dip204_set_cursor_position(8, 4);
-	dip204_printf_string("%d", i);
-	dip204_set_cursor_position(17, 2);
-	dip204_printf_string("%d", temper);
-	dip204_set_cursor_position(17, 3);
-	dip204_printf_string("%d", light);
-	dip204_set_cursor_position(17, 4);
-	dip204_printf_string("%d", msg[5]);
-	dip204_hide_cursor();
+	dip204_printf_string("O T:");
+	dip204_set_cursor_position(10, 3);
+	dip204_printf_string("A T:");
+	dip204_set_cursor_position(1, 2);
+	dip204_printf_string("O L:");
+	dip204_set_cursor_position(10, 2);
+	dip204_printf_string("A L:");
+	dip204_set_cursor_position(15, 1);
+	dip204_printf_string("%d", nodeCount());
 }
 void initBoard(void)
 {
@@ -110,7 +155,16 @@ void initBoard(void)
 	// Enables receive interrupts.
 	Disable_global_interrupt();
 	INTC_init_interrupts();
-	Enable_global_interrupt();
+
+	// Register the RTC interrupt handler to the interrupt controller.
+	INTC_register_interrupt(&interrupt, AVR32_RTC_IRQ, AVR32_INTC_INT0);
+	rtc_init(&AVR32_RTC, RTC_OSC_32KHZ, 14);
+	// Set top value to 0 to generate an interrupt every seconds */
+	rtc_set_top_value(&AVR32_RTC, 0);
+	// Enable the interrupts
+	rtc_enable_interrupt(&AVR32_RTC);
+	// Enable the RTC
+	rtc_enable(&AVR32_RTC);
 	
 	// Delay to let the Oscillator get started
 	delay_init( FOSC0 );
@@ -119,31 +173,6 @@ void initBoard(void)
 	config_dpi204();
 	dip204_init(100,1);
 	dip204_clear_display();
-}
-
-UINT8 nodeCount(UINT16 newId)
-{
-	UINT8 l;
-	//Adds any new nodes to its corresponding position
-	ids |= (1 << (newId & 0xF));
-
-	for(int j = 0; j < 16 ; ++j)
-	{
-		//If counts the number of nodes active within ~1000 ms
-		UINT16 ids_new = ((ids >> j) & 0x1);
-
-		//If there was a node found at the j'th bit 1 is added to l
-		if(ids_new == 1)
-		{
-			++l;
-		}
-	}
-	//If the board itself is active on the bus we add 1
-	if(CANRxReady(0) || CANTxReady(0))
-	{
-		++l;
-	}
-	return l;
 }
 
 int main(void) {
@@ -156,34 +185,42 @@ int main(void) {
 		
 	InitializeCANExtended(0, CAN_250kbps, Mask, Flt);
 
-	UINT8 nodes;
-
 	while(1){
-		
+
 		adc_start(&AVR32_ADC);
-		ids &= 0x0;
-		
+
 		//Clear memory contents
 		ClearMessages(msg);
+
 		//Read any message available
 		if(CANRxReady(0)){
 			if( CANGetMsg(0, &Ident, msg, &mSize )) // Gets message and returns //TRUE if message received.
-			{	
-				nodes = nodeCount(Ident);			
+			{					
+				nFrame[0x00F & Ident].ID = Ident;
+
+				//Adding frame to the struct
+				for(int i = 0; i < 8; ++i)
+				{
+					nFrame[0x00F & Ident].mssg[i] = msg[i];
+				}
 			}
 		}
 
 		if(CANTxReady(0))
 		{
-			
-			readADC();
-			CANSendMsg(0, 0x120E, msg, 8, 0);
+			//readADC();
+			CANSendMsg(0, ownId, nFrame[0x00F & ownId].mssg, 8, 0);
 			delay_ms(1000);
 		}
-
+		
+		dip204_clear_display();
 		printLCD();
-		dip204_set_cursor_position(15, 1);
-		dip204_printf_string("%d", nodes);
+		ownADC();
+		average();
+		nodeCount();
+		dip204_hide_cursor();
+		
+		
 	}
 	return 0;
 }
