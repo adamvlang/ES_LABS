@@ -4,6 +4,7 @@
 \usepackage[latin1]{inputenc}
 \usepackage{float}
 \usepackage{listings}
+\usepackage{amsmath}
 
 
 \begin{document}
@@ -13,7 +14,7 @@
 \section{Test clock settings}
 \begin{table}[H]
 \centering
-\begin{tabular}{l l l l l l}
+\begin{tabular}{l | l l l l l}
 Clock Settings [MHz] & 2 & 12 & 33 & 48 & 66 \\
 \hline
 PLL Frequency [MHz]  & 48 & 48  & 66 & 96 & 132\\
@@ -59,37 +60,89 @@ from the function $pcl\_configure\_clocks\_rcsys(pc\_freq\_param\_t *param)$. \n
 
 typedef struct
 {
-  //! Main clock source selection (input argument).
-  pcl_mainclk_t main_clk_src;
-
-  //! Target CPU frequency (input/output argument).
+  //! CPU frequency (input/output argument).
   unsigned long cpu_f;
 
-  //! Target PBA frequency (input/output argument).
+  //! PBA frequency (input/output argument).
   unsigned long pba_f;
-
-  //! Target PBB frequency (input/output argument).
-  unsigned long pbb_f;
-
-  //! Target PBC frequency (input/output argument).
-  unsigned long pbc_f;
 
   //! Oscillator 0's external crystal(or external clock) frequency (board dependant) (input argument).
   unsigned long osc0_f;
 
   //! Oscillator 0's external crystal(or external clock) startup time: AVR32_PM_OSCCTRL0_STARTUP_x_RCOSC (input argument).
   unsigned long osc0_startup;
-
-  //! DFLL target frequency (input/output argument) (NOTE: the bigger, the most stable the frequency)
-  unsigned long dfll_f;
-
-  //! Other parameters that might be necessary depending on the device (implementation-dependent).
-  // For the UC3L DFLL setup, this parameter should be pointing to a structure of
-  // type (scif_gclk_opt_t *).
-  void *pextra_params;
-} pcl_freq_param_t;
+} pm_freq_param_t;
 
 \end{lstlisting}
+, where $osc0\_f$ is set to $FOSC0$ and $osc0\_startup$ is set to $OSC0\_STARTUP$.
+\section{Real Time Clock}
+\textbf{d.} When using the 32kHz crystal, $RTC\_PSEL\_32KHZ\_1HZ = 14$ gives RTC
+at 1 Hz.
+\newline
+\textbf{e.} Using the equation in the header file $rtc.h$ to choose $PSEL$, one
+can calculate the desired frequency. For a 2.5 second interrupt frequency, using
+2 Hz and interrupting at every 5 ticks would give the correct interrupt time.
+Choosing $PSEL$ is done by using
+\begin{equation}
+    PSEL = \frac{\log{\frac{f_{osc}} {f_{rtc}}}} {\log{2}}-1.
+\end{equation}
+\newline
+\textbf{g.} The LED switches at the same frequency. Power consumtion is lower
+than before. The RTC is not dependant on CPU speed, which makes it more general.
+It is also more exact.
+\newline
+\textbf{b.} Power consumtion in described in table below. Note that the display
+is on.
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | l l}
+        Clock speed [MHz] & Power consumtion sleep [mW] & Power consumtion
+        software [mW]\\
+        \hline
+        12 & 560 & 585 \\
+        \hline
+        33 & 580 & 645 \\
+        \hline
+        66 & 610 & 715 \\
+    \end{tabular}
+\end{table}
+\textbf{c./d.} The following table displays modes that are working and what
+power consumption they have.
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | l l}
+        Sleep modes & Blinking? & Power Consumtion [mW]\\
+        \hline
+        Idle & Yes & 505 \\
+        \hline
+        Frozen & Yes & 465 \\
+        \hline
+        Standby & Yes & 425 \\
+        \hline
+        Stop & Yes & 425 \\
+        \hline
+        Deep stop & Yes & 435 \\
+        \hline
+        Static & No & 435 \\
+    \end{tabular}
+\end{table}
+Since the LED is running on interrupts, as long as there is a clock that
+generates them, the LED should blink. In stop and deep stop, the CPU is in sleep
+but the RC clock is still running which generates the interrupts. In static,
+only an external interrupt can wake the micro-controller.
 
+\section{Power hogs}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | l}
+        Hardware & Power Consumtion \\
+        \hline
+        USART & 11.55 \\
+        \hline
+        All LEDs & 150 \\
+        \hline
+        LCD & 105
+    \end{tabular}
+\end{table}
 
 \end{document}
