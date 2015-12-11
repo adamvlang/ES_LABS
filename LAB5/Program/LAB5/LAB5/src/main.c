@@ -1,5 +1,7 @@
 #include <asf.h>
 
+volatile int vol_state = 1;
+
 int config_dip204(void) {
 	static const gpio_map_t DIP204_SPI_GPIO_MAP =
 	{
@@ -166,53 +168,75 @@ void set_interrupts(unsigned int ticks_to_interrupt, unsigned int rtcsel){
 }
 
 
+
 __attribute__((__interrupt__))
 
 void rtc_irq(void){
 	static int led_state = 0;
 	
-	if (led_state == 0) {
-		LED_On(LED0);
-		LED_Off(LED1);
-		led_state = 1;
-	}
-	else {
-		LED_On(LED1);
-		LED_Off(LED0);
-		led_state = 0;
+	if (vol_state == 1){
+		if (led_state == 0) {
+			LED_Display(LED0);
+			led_state = 1;
+		}
+		else {
+			LED_Display(LED1);
+			led_state = 0;
+		}
 	}
 	rtc_clear_interrupt(&AVR32_RTC);
 }
 
-volatile int vol_state = 0;
 
 __attribute__((__interrupt__))
 
 void but_interrupt(void){
+	dip204_clear_display();
+	dip204_set_cursor_position(1,1);
+	
 	if (vol_state == 0)
 	{
-		LED_On(LED2);
 		vol_state = 1;
 	}
 	else if (vol_state == 1)
 	{
-		LED_Off(LED2);
 		vol_state = 0;
 	}
-	
+	dip204_printf_string("Sleep: %i", vol_state);
 	gpio_clear_pin_interrupt_flag(88);
 }
 
 void part4(void){
+	int state = 0;
+
+	set_cpu_freq(12,6);
 	set_interrupts(0, 14);
+	
+	dip204_clear_display();
+	dip204_set_cursor_position(1,1);
+	dip204_printf_string("Sleep: %i", vol_state);
+	
 	while(1){
-	SLEEP(AVR32_PM_SMODE_IDLE);	
+		if(vol_state == 1){
+			SLEEP(AVR32_PM_SMODE_IDLE);
+		}
+		else if (vol_state == 0){
+			if (state == 0) {
+				LED_Display(LED0);
+				state = 1;
+			}
+			else {
+				LED_Display(LED1);
+				state = 0;
+			}
+			software_delay();
+		}
 	}
 }
 
 int main(void) {
 	board_init();
-	//config_dip204();
+	config_dip204();
 	
 	// Manually define clock settings
 	//part1();
