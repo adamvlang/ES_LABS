@@ -35,7 +35,7 @@ int config_dip204(void) {
 
 static void software_delay(void){
 	volatile int i;
-	for (i=0; i<1000000; i++);
+	for (i=0; i<1000000*66/12; i++);
 }
 
 void blink_loop(void){
@@ -209,7 +209,7 @@ void but_interrupt(void){
 void part4(void){
 	int state = 0;
 
-	set_cpu_freq(12,6);
+	set_cpu_freq(66,6);
 	set_interrupts(0, 14);
 	
 	dip204_clear_display();
@@ -234,9 +234,17 @@ void part4(void){
 	}
 }
 
+void part4b(void){
+	set_cpu_freq(66,6);
+	set_interrupts(0, 14);
+	
+	while(1){SLEEP(AVR32_PM_SMODE_STOP)}
+}
+
+
 int main(void) {
 	board_init();
-	config_dip204();
+	//config_dip204();
 	
 	// Manually define clock settings
 	//part1();
@@ -245,7 +253,9 @@ int main(void) {
 	// Blink leds with interrupt
 	//part3(12,6);
 	// Use sleep mode
-	part4();
+	//part4();
+	// Test different sleep modes at 66 MHz
+	part4b();
 	
 	return 0;
 	
