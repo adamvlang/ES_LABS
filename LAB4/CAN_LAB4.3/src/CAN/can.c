@@ -632,15 +632,11 @@ Bool CANGetMsg( int Channel, UINT32* pIdentifier, UINT8* Msg, UINT8* pMsgSize )
         if (((S2>>3)&0x01)==0) //format the 11 bit identifier
         {
             *pIdentifier = S1<<3 | S2>>5;
-            LED_On(LED0);
-            LED_Off(LED1);
 
         }
         else if (((S2>>3)&0x01)==1) //format the 29 bit identifier
         {
             *pIdentifier =  (S1<<21 |((S2>>3 & 0x1c)|(S2&0x03))<<16 | S3 <<8 |  S4);
-            LED_On(LED1);
-            LED_Off(LED0);
         }
 
         *pMsgSize = CAN2515ByteRead(Channel, loc+4) & 0x0F; //Data Length
@@ -656,7 +652,6 @@ Bool CANGetMsg( int Channel, UINT32* pIdentifier, UINT8* Msg, UINT8* pMsgSize )
         // Here is the identifier of the remote frame being set. When a remote frame messages with the same identifier as defined here the
         //node will respond with a user predefined message.
         //UINT8 RemoteFrameId=User defined;
-        LED_Off(LED2);
         if ( ((CAN2515ByteRead( Channel, RXB0CTRL ) & 0x08) || (CAN2515ByteRead( Channel, RXB1CTRL ) & 0x08)) && *pIdentifier==RemoteFrameId)
                     {
                     Msg[0] = 0;
@@ -667,7 +662,6 @@ Bool CANGetMsg( int Channel, UINT32* pIdentifier, UINT8* Msg, UINT8* pMsgSize )
                     CANSendMsg( Channel,*pIdentifier, Msg, 4, 0 );
                     dip204_set_cursor_position(17,4);
                     dip204_printf_string("Re F");
-                    LED_On(LED2);
                 }
 
         //clear CANINTF RX01F_RESET=0x00. To be able to receive new messages

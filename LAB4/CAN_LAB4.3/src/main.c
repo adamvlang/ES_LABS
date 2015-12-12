@@ -12,15 +12,17 @@ CAN example
 #define CAN_500kbps 5
 #define CAN_250kbps 7
 #define CAN_125kbps 10
+#define Switch1 88
 
 UINT8 msg[8], mSize;
 
 UINT16 ids;
 
-UINT16 ownId = 0x1202;
+UINT16 ownId = 0x1203;
 
 UINT32 Ident;
 
+//Inint struct
 struct frame
 {
 	UINT16 ID;
@@ -42,10 +44,11 @@ void readADC(void)
 	//Setting MSB and LSB for the ADC channels, to be able to send over CAN
 	lightMSB = (readLight >> 8) & 0x00000003;
 	lightLSB = readLight & 0x000000FF;
-				
+
 	tempMSB = (readTemp >> 8) & 0x00000003;
 	tempLSB = readTemp & 0x000000FF;
 	
+	//Adding measurements to struct
 	nFrame[0x00F & ownId].mssg[0] = tempMSB;
 	nFrame[0x00F & ownId].mssg[1] = tempLSB;
 	nFrame[0x00F & ownId].mssg[2] = lightMSB;
@@ -79,51 +82,113 @@ void ownADC(void)
 UINT8 nodeCount(void)
 {
 	UINT8 l;
-	ids = 0;
-
+	
 	for(int j = 0; j < 16 ; ++j)
 	{
-		//Adds any new nodes to its corresponding position in nodeCount bit seq.
-		ids |= (1 << (nFrame[j].ID & 0x000F));
-
-		UINT16 ids_new = ids;
-		//If counts the number of nodes active within ~1000 ms
-		ids_new &= ((ids_new >> j) & 0x01);
-
+		ids = nFrame[j].ID;
+		
 		//If there was a node found at the j'th bit 1 is added to l
-		if(ids_new == 1)
+		if(ids != 0)
 		{
 			++l;
 		}
 	}
+// 	//If not active on bus
+// 	if (!CANRxReady(0) || !CANTxReady(0))
+// 	{
+// 		--l;
+// 	}
 	return l;
 	
 }
 
 __attribute__((__interrupt__)) static void interrupt(void)
-{
-		
-	struct frame nFrame;
-
+{	
+	//Send message
+	if(CANTxReady(0))
+	{
+		CANSendMsg(0, ownId, nFrame[0x00F & ownId].mssg, 8, 0);
+	}
+	
 	rtc_clear_interrupt(&AVR32_RTC);
 }
 
+// blinkInterrupt(UINT8 mode);
+// {
+// 	if(x==1)
+// 	{
+// 		LED_On(6);
+// 		x = 2;
+// 	}
+// 	if(x==2)
+// 	{
+// 		LED_Off(6)
+// 		x = 1;
+// 	}
+// 
+// 	gpio_clear_pin_interrupt_flag(Switch1);
+// }
 void average(void)
 {
+	int x=0;
+	UINT16 night = 0;
+	UINT16 warm = 0;	
+	UINT16 cold = 0;
 	UINT16 lighttot= 0; 
 	UINT16 tempertot = 0;
 	UINT16 actNodes = nodeCount();
-
+	
+	//Calculating total light and temp received
 	for(int i = 0; i < 16; ++i)
 	{
 		lighttot += ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]);
 		tempertot += ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]);
 	}
+	
+	for(int i = 0; i < 16; ++i)
+	{
+		if(((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]) < ((lighttot/actNodes)/2) && ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]) != 0)
+		{
+			++night;
+		}
+		if(((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) > ((tempertot/actNodes)*1.15))
+		{
+			++warm;
+		}
+		if(((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) < ((tempertot/actNodes)/3) && ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]) != 0)
+		{
+			++cold;
+		}
+	}
+
+		if (night == 0 && cold == 0)
+		{
+			LED_Display(1);
+		}
+
+		else if(night == 1)
+		{
+			LED_On(5);
+		}
+		else
+		{
+			LED_On(6);
+		}
+	
+	
+	//Printing values to display
 	dip204_set_cursor_position(15, 3);
 	dip204_printf_string("%d",  (tempertot/actNodes));
 	dip204_set_cursor_position(15, 2);
 	dip204_printf_string("%d",  (lighttot/actNodes));
+	dip204_set_cursor_position(4, 4);
+	dip204_printf_string("%d",  night);
+	dip204_set_cursor_position(6, 4);
+	dip204_printf_string("%d",  warm);
+	dip204_set_cursor_position(8, 4);
+	dip204_printf_string("%d",  cold);
 }
+
 
 void printLCD(void)
 {					
@@ -131,6 +196,8 @@ void printLCD(void)
 	dip204_printf_string("Active nodes:");
 	dip204_set_cursor_position(1, 3);
 	dip204_printf_string("O T:");
+	dip204_set_cursor_position(1, 4);
+	dip204_printf_string("N:");
 	dip204_set_cursor_position(10, 3);
 	dip204_printf_string("A T:");
 	dip204_set_cursor_position(1, 2);
@@ -155,6 +222,7 @@ void initBoard(void)
 	// Enables receive interrupts.
 	Disable_global_interrupt();
 	INTC_init_interrupts();
+	Enable_global_interrupt();
 
 	// Register the RTC interrupt handler to the interrupt controller.
 	INTC_register_interrupt(&interrupt, AVR32_RTC_IRQ, AVR32_INTC_INT0);
@@ -175,52 +243,73 @@ void initBoard(void)
 	dip204_clear_display();
 }
 
-int main(void) {
-	
+int main(void) 
+{
 	initBoard();
 
+	//Filtering incoming messages
 	UINT16 Mask = 0xFFF0; 
 	UINT16 flt = 0x1200;
 	UINT16 Flt[] = {flt,flt,flt,flt,flt,flt};
 		
 	InitializeCANExtended(0, CAN_250kbps, Mask, Flt);
 
-	while(1){
+	while(1)
+	{
 
 		adc_start(&AVR32_ADC);
 
 		//Clear memory contents
 		ClearMessages(msg);
+		
+		//If the dongle is connected to a bus
+		if(CANRxReady(0) || CANTxReady(0))
+		{
+			// Setting own id.
+			nFrame[0x00F & ownId].ID = 0x1202;
 
-		//Read any message available
-		if(CANRxReady(0)){
-			if( CANGetMsg(0, &Ident, msg, &mSize )) // Gets message and returns //TRUE if message received.
-			{					
-				nFrame[0x00F & Ident].ID = Ident;
+			//Write to display and read ADC
+			dip204_clear_display();
+			printLCD();
+			ownADC();
+			average();
+			dip204_hide_cursor();
 
-				//Adding frame to the struct
-				for(int i = 0; i < 8; ++i)
-				{
-					nFrame[0x00F & Ident].mssg[i] = msg[i];
+			//Read any message available
+			if(CANRxReady(0))
+			{
+				if( CANGetMsg(0, &Ident, msg, &mSize )) // Gets message and returns //TRUE if message received.
+				{					
+					//Adding received ID to struct
+					nFrame[0x00F & Ident].ID = Ident;
+
+					//Adding frame to the struct
+					for(int i = 0; i < 8; ++i)
+					{
+						//Adding received message to struct
+						nFrame[0x00F & Ident].mssg[i] = msg[i];
+					}
 				}
 			}
-		}
-
-		if(CANTxReady(0))
-		{
-			//readADC();
-			CANSendMsg(0, ownId, nFrame[0x00F & ownId].mssg, 8, 0);
 			delay_ms(1000);
 		}
-		
-		dip204_clear_display();
-		printLCD();
-		ownADC();
-		average();
-		nodeCount();
-		dip204_hide_cursor();
-		
+		// If the dongle isn't connected
+		else
+		{
+			//Write to display and read ADC
+			dip204_clear_display();
+			printLCD();
+			ownADC();
+			dip204_hide_cursor();
+			for(int j = 0; j < 16 ; ++j)
+			{
+				nFrame[j].ID = 0;
+			}
+			
+			delay_ms(1000);
+		}
 		
 	}
 	return 0;
 }
+	
