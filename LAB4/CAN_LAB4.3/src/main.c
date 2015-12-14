@@ -13,6 +13,7 @@ CAN example
 #define CAN_250kbps 7
 #define CAN_125kbps 10
 #define Switch1 88
+#define RX 85
 
 UINT8 msg[8], mSize;
 
@@ -25,6 +26,10 @@ UINT32 Ident;
 volatile int warmWarn = 0;
 volatile int emergency = 0;
 volatile int emergAck = 0;
+volatile int faulty = 0;
+/******************************/
+volatile int state = 0;
+/******************************/
 //Inint struct
 struct frame
 {
@@ -56,14 +61,14 @@ void readADC(void)
 	tempLSB = readTemp & 0x000000FF;
 	
 	//Adding measurements to struct
-	nFrame[0x00F & ownId].mssg[0] = tempMSB;
-	nFrame[0x00F & ownId].mssg[1] = tempLSB;
-	nFrame[0x00F & ownId].mssg[2] = lightMSB;
-	nFrame[0x00F & ownId].mssg[3] = lightLSB;
-	nFrame[0x00F & ownId].mssg[4] = 0;
-	nFrame[0x00F & ownId].mssg[5] = 0;
-	nFrame[0x00F & ownId].mssg[6] = 0;
-	nFrame[0x00F & ownId].mssg[7] = 0;
+	youngFrame[0x00F & ownId].mssg[0] = tempMSB;
+	youngFrame[0x00F & ownId].mssg[1] = tempLSB;
+	youngFrame[0x00F & ownId].mssg[2] = lightMSB;
+	youngFrame[0x00F & ownId].mssg[3] = lightLSB;
+	youngFrame[0x00F & ownId].mssg[4] = 0;
+	youngFrame[0x00F & ownId].mssg[5] = 0;
+	youngFrame[0x00F & ownId].mssg[6] = 0;
+	youngFrame[0x00F & ownId].mssg[7] = 0;
 }
 
 void ownADC(void)
@@ -104,8 +109,11 @@ UINT8 nodeCount(void)
 	
 }
 
+void blink(void);
+
 __attribute__((__interrupt__)) static void interrupt(void)
 {	
+	blink();
 	for(int i = 0; i < 15; ++i)
 	{
 		nFrame[i] = youngFrame[i];
@@ -142,19 +150,44 @@ __attribute__((__interrupt__)) static void interrupt(void)
 			led_state = 0;
 		}
 	}
+	if (faulty == 1)
+	{
+		static int led_state = 0;
+		if (led_state == 0) {
+			LED_On(4);
+			led_state = 1;
+		}
+		else {
+			LED_Off(4);
+			led_state = 0;
+		}
+	}
+	
 	rtc_clear_interrupt(&AVR32_RTC);
 }
 
-__attribute__((__interrupt))
-void but_interrupt(void)
+__attribute__((__interrupt)) void but_interrupt(void)
 {
+	
+	
+	//LED_Off(2);
 	if (emergency == 1)
 	{
+		//AVR32_GPIO.port[2].ovrc = 1 << 24;
 		emergAck = 1;
-		LED_On(2);
 	}
+	gpio_clear_pin_interrupt_flag(Switch1);
 	
-	gpio_clear_pin_interrupt_flag(88);
+}
+
+
+__attribute__((__interrupt)) void RX_interrupt(void)
+{
+
+	
+	gpio_clear_pin_interrupt_flag(RX);
+
+	//AVR32_GPIO.port[2].ovrc = 1 << 29;
 }
 
 void average(void)
@@ -181,15 +214,30 @@ void average(void)
 		{
 			++night;
 		}
-		if(((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) > ((tempertot/actNodes)*1.15))
+		if(((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) < ((tempertot/actNodes)*0.75) && ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) != 0)
 		{
 			++warm;
 		}
-		if(((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) < ((tempertot/actNodes)/3) && ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]) != 0)
+		if(((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) > ((tempertot/actNodes)*1.10) && ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) != 0)
 		{
 			++cold;
+			nFrame[i].mssg[0] = 0;
+			nFrame[i].mssg[1] = 0;
+			nFrame[i].mssg[2] = 0;
+			nFrame[i].mssg[3] = 0;
+			--actNodes;
+			faulty = 1;
 		}
 	}
+	lighttot = 0;
+	tempertot = 0;
+	//Calculating total light and temp received
+	for(int i = 0; i < 15; ++i)
+	{
+		lighttot += ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]);
+		tempertot += ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]);
+	}
+
 		//Printing values to display
 		dip204_set_cursor_position(15, 3);
 		dip204_printf_string("%d",  (tempertot/actNodes));
@@ -197,30 +245,26 @@ void average(void)
 		dip204_printf_string("%d",  (lighttot/actNodes));
 		dip204_set_cursor_position(4, 4);
 		dip204_printf_string("%d",  night);
-		dip204_set_cursor_position(6, 4);
-		dip204_printf_string("%d",  warm);
-		dip204_set_cursor_position(8, 4);
-		dip204_printf_string("%d",  cold);
 
 		if (night == 0 && cold == 0)
 		{
 			LED_Display(1);
 			warmWarn = 0;
+			faulty = 0;
 		}
 
-		else if(night == 1)
+		else if(warm == 1)
 		{
-			emergency = 1;
+			warmWarn = 1;
+			LED_Off(1);
 			
 		}
-		else if(night == 2 && emergAck == 0)
+		else if(warm == 2 && emergAck == 0)
 		{
 			emergency = 1;
+			LED_Off(1);
 		}
-		else
-		{
-			LED_Display(6);
-		}
+		
 		if (emergency == 1)
 		{
 		
@@ -229,6 +273,7 @@ void average(void)
 				if(night < 1)
 				{
 					emergency = 0;
+					emergAck = 0;
 				}
 			}
 			
@@ -244,7 +289,7 @@ void printLCD(void)
 	dip204_printf_string("O T:");
 	dip204_set_cursor_position(1, 4);
 	dip204_printf_string("N:");
-	dip204_set_cursor_position(10, 3);
+	dip204_set_cursor_position(10, 3); 
 	dip204_printf_string("A T:");
 	dip204_set_cursor_position(1, 2);
 	dip204_printf_string("O L:");
@@ -267,7 +312,7 @@ void initBoard(void)
 	//spidatareadpointer=&spidataread;
 	pm_switch_to_osc0(&AVR32_PM, FOSC0, OSC0_STARTUP);
 	
-	// Configures the MCP2515 SPI communication.
+	// Configures the MCP2515 SPI  communication.
 	config_SPI_SPARE();
 
 	// Enables receive interrupts.
@@ -284,20 +329,37 @@ void initBoard(void)
 	rtc_enable(&AVR32_RTC);
 	
 	// Button interrupt
-	INTC_register_interrupt(&but_interrupt, (AVR32_GPIO_IRQ_0+88/8), AVR32_INTC_INT0);
-	gpio_enable_pin_glitch_filter(88);
-	gpio_enable_pin_interrupt(88, GPIO_FALLING_EDGE);
-
+	INTC_register_interrupt(&but_interrupt, (AVR32_GPIO_IRQ_0+Switch1/8), AVR32_INTC_INT0);
+	gpio_enable_pin_glitch_filter(Switch1);
+	gpio_enable_pin_interrupt(Switch1, GPIO_FALLING_EDGE);
+	
+	// Receive interrupt
+	INTC_register_interrupt(&RX_interrupt, (AVR32_GPIO_IRQ_0+RX/8), AVR32_INTC_INT0);
+	gpio_enable_pin_glitch_filter(RX);
+	gpio_enable_pin_interrupt(RX, GPIO_FALLING_EDGE);
 	
 	Enable_global_interrupt();
 	// Delay to let the Oscillator get started
-	delay_init( FOSC0 );
+	delay_init(FOSC0);
 	
 	// Initializes the display
 	config_dpi204();
 	dip204_init(100,1);
 	dip204_clear_display();
 }
+
+
+void blink(void){
+	if (state == 0){
+		LED_On(LED3);
+		state = 1;
+		}
+	else if (state == 1){
+		LED_Off(LED3);
+		state = 0;
+		}	
+}
+
 
 int main(void) 
 {
@@ -346,8 +408,10 @@ int main(void)
 						youngFrame[0x00F & Ident].mssg[i] = msg[i];
 					}
 				}
+				
 			}
 			delay_ms(1000);
+
 		}
 		// If the dongle isn't connected
 		else
@@ -366,6 +430,7 @@ int main(void)
 		}
 		
 	}
+
 	return 0;
 }
 	
