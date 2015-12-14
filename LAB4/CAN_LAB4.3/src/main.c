@@ -30,13 +30,13 @@ volatile int faulty = 0;
 /******************************/
 volatile int state = 0;
 /******************************/
-//Inint struct
+//Initiate struct
 struct frame
 {
 	UINT16 ID;
 	UINT8 mssg[8];
-
 }nFrame[15];
+
 
 struct frame youngFrame[15];
 struct frame emptyStruct[15];
@@ -44,6 +44,7 @@ struct frame emptyStruct[15];
 
 void readADC(void)
 {
+	// Reads values of pot, light and temperature
 	UINT32 readPot, readLight, readTemp;
 	UINT16 potMSB, potLSB, lightMSB, lightLSB, tempMSB, tempLSB;
 
@@ -73,6 +74,7 @@ void readADC(void)
 
 void ownADC(void)
 {
+	// Reads ADC on own board and displays values
 	UINT16 light = 0;
 	UINT16 temper= 0;
 
@@ -93,26 +95,29 @@ void ownADC(void)
 
 UINT8 nodeCount(void)
 {
-	UINT8 l;
+	// Count nodes by iterating over addresses 
+	UINT8 nodes;
 
+	// 15 addresses available
 	for(int j = 0; j < 15 ; ++j)
 	{
 		ids = nFrame[j].ID;
-		
 		//If there was a node found at the j'th bit 1 is added to l
 		if(ids != 0)
 		{
-			++l;
+			++nodes;
 		}
 	}
-	return l;
+	return nodes;
 	
 }
 
+// Prototype
 void blink(void);
 
 __attribute__((__interrupt__)) static void interrupt(void)
 {	
+	// Send message every second on rtc interrupt
 	blink();
 	for(int i = 0; i < 15; ++i)
 	{
@@ -166,11 +171,9 @@ __attribute__((__interrupt__)) static void interrupt(void)
 	rtc_clear_interrupt(&AVR32_RTC);
 }
 
-__attribute__((__interrupt)) void but_interrupt(void)
+__attribute__((__interrupt__)) void but_interrupt(void)
 {
-	
-	
-	//LED_Off(2);
+
 	if (emergency == 1)
 	{
 		//AVR32_GPIO.port[2].ovrc = 1 << 24;
@@ -181,13 +184,11 @@ __attribute__((__interrupt)) void but_interrupt(void)
 }
 
 
-__attribute__((__interrupt)) void RX_interrupt(void)
+__attribute__((__interrupt__)) void RX_interrupt(void)
 {
 
-	
+	LED_On(LED2);
 	gpio_clear_pin_interrupt_flag(RX);
-
-	//AVR32_GPIO.port[2].ovrc = 1 << 29;
 }
 
 void average(void)
