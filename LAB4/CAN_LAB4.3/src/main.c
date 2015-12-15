@@ -47,9 +47,11 @@ struct display
 	UINT16 ownTemp;
 	UINT16 averLight;
 	UINT16 averTemp;
+	UINT16 night;
 	
 }printDisp;
 
+struct display emptyDisplay;
 
 void readADC(void)
 {
@@ -103,6 +105,7 @@ void nodeCount(void)
 	printDisp.nodes = nodes;	
 }
 
+void printLCD(void);
 
 __attribute__((__interrupt__)) static void interrupt(void)
 {	
@@ -118,6 +121,9 @@ __attribute__((__interrupt__)) static void interrupt(void)
 	{
 		CANSendMsg(0, ownId, sendFrame[0x00F & ownId].mssg, 8, 0);
 	}
+	
+	printLCD();
+	printDisp = emptyDisplay;
 	
 	if (warmWarn == 1){
 		static int led_state = 0;
@@ -227,13 +233,9 @@ void average(void)
 		tempertot += ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]);
 	}
 
-		//Printing values to display
-		dip204_set_cursor_position(15, 3);
-		dip204_printf_string("%d",  (tempertot/actNodes));
-		dip204_set_cursor_position(15, 2);
-		dip204_printf_string("%d",  (lighttot/actNodes));
-		dip204_set_cursor_position(4, 4);
-		dip204_printf_string("%d",  night);
+	printDisp.averLight = lighttot/actNodes;
+	printDisp.averTemp	= tempertot/actNodes;
+	printDisp.night = night;
 
 		if (night == 0 && cold == 0)
 		{
@@ -272,6 +274,7 @@ void average(void)
 
 void printLCD(void)
 {
+	dip204_clear_display();
 	dip204_set_cursor_position(1, 1);
 	dip204_printf_string("Active nodes:");
 	dip204_set_cursor_position(1, 3);
@@ -290,6 +293,13 @@ void printLCD(void)
 	dip204_printf_string("%d", printDisp.ownLight);
 	dip204_set_cursor_position(6, 3);
 	dip204_printf_string("%d", printDisp.ownTemp);
+	dip204_set_cursor_position(15, 3);
+	dip204_printf_string("%d",  printDisp.averTemp);
+	dip204_set_cursor_position(15, 2);
+	dip204_printf_string("%d",  printDisp.averLight);
+	dip204_set_cursor_position(4, 4);
+	dip204_printf_string("%d",  printDisp.night);
+	dip204_hide_cursor();
 }
 void initBoard(void)
 {
@@ -390,23 +400,13 @@ int main(void)
 			receiveMsg();
 			readADC();
 			nodeCount();
-						
-			//Write to display and read ADC
-			dip204_clear_display();
-			printLCD();
 			average();
-			dip204_hide_cursor();
-
 			
 		}
 		// If the dongle isn't connected
 		else
 		{
-			//Write to display and read ADC
-// 			dip204_clear_display();
-// 			//printLCD();
-// 			//ownADC();
-// 			dip204_hide_cursor();
+ 			readADC();
 			for(int j = 0; j < 16 ; ++j)
 			{
 				sendFrame[j].ID = 0;
