@@ -122,7 +122,7 @@
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.jtagicemkii</ToolType>
-      <ToolNumber>0700000064AC</ToolNumber>
+      <ToolNumber>070000004CB4</ToolNumber>
       <ToolName>JTAGICE mkII</ToolName>
     </com_atmel_avrdbg_tool_jtagicemkii>
   </PropertyGroup>

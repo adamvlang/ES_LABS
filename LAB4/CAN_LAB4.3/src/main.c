@@ -13,7 +13,7 @@ CAN example
 #define CAN_250kbps 7
 #define CAN_125kbps 10
 #define Switch1 88
-#define RX 85
+#define RX 29
 
 UINT8 msg[8], mSize;
 
@@ -27,33 +27,41 @@ volatile int warmWarn = 0;
 volatile int emergency = 0;
 volatile int emergAck = 0;
 volatile int faulty = 0;
-/******************************/
-volatile int state = 0;
-/******************************/
+
+
 //Initiate struct
 struct frame
 {
 	UINT16 ID;
 	UINT8 mssg[8];
-}nFrame[15];
+}sendFrame[15];
 
 
-struct frame youngFrame[15];
+struct frame tempFrame[15];
 struct frame emptyStruct[15];
+
+struct display
+{
+	UINT8 nodes;
+	UINT16 ownLight;
+	UINT16 ownTemp;
+	UINT16 averLight;
+	UINT16 averTemp;	
+}printDisp;
 
 
 void readADC(void)
 {
+	// Reads own ADC values and adds them to tempFrame
+	
 	// Reads values of pot, light and temperature
 	UINT32 readPot, readLight, readTemp;
 	UINT16 potMSB, potLSB, lightMSB, lightLSB, tempMSB, tempLSB;
-
-		
+	
 	//Reading ADC channels
 	readLight = adc_get_value(&AVR32_ADC, ADC_LIGHT_CHANNEL);
 	readTemp = adc_get_value(&AVR32_ADC, ADC_TEMPERATURE_CHANNEL);
 		
-	
 	//Setting MSB and LSB for the ADC channels, to be able to send over CAN
 	lightMSB = (readLight >> 8) & 0x00000003;
 	lightLSB = readLight & 0x000000FF;
@@ -62,36 +70,39 @@ void readADC(void)
 	tempLSB = readTemp & 0x000000FF;
 	
 	//Adding measurements to struct
-	youngFrame[0x00F & ownId].mssg[0] = tempMSB;
-	youngFrame[0x00F & ownId].mssg[1] = tempLSB;
-	youngFrame[0x00F & ownId].mssg[2] = lightMSB;
-	youngFrame[0x00F & ownId].mssg[3] = lightLSB;
-	youngFrame[0x00F & ownId].mssg[4] = 0;
-	youngFrame[0x00F & ownId].mssg[5] = 0;
-	youngFrame[0x00F & ownId].mssg[6] = 0;
-	youngFrame[0x00F & ownId].mssg[7] = 0;
+	tempFrame[0x00F & ownId].mssg[0] = tempMSB;
+	tempFrame[0x00F & ownId].mssg[1] = tempLSB;
+	tempFrame[0x00F & ownId].mssg[2] = lightMSB;
+	tempFrame[0x00F & ownId].mssg[3] = lightLSB;
+	tempFrame[0x00F & ownId].mssg[4] = 0;
+	tempFrame[0x00F & ownId].mssg[5] = 0;
+	tempFrame[0x00F & ownId].mssg[6] = 0;
+	tempFrame[0x00F & ownId].mssg[7] = 0;
+	
+	printDisp.ownLight = readLight;
+	printDisp.ownTemp = readTemp;
 }
 
-void ownADC(void)
-{
-	// Reads ADC on own board and displays values
-	UINT16 light = 0;
-	UINT16 temper= 0;
-
-	readADC();
-	
-	// Read light, 2 MSB msg[2], 8 LSB msg[3]
-	light = (((UINT16)nFrame[0x00F & ownId].mssg[2]) << 8 ) | nFrame[0x00F & ownId].mssg[3];
-	
-	// Read temp, 2 MSB msg[0], 8 LSB msg[1]
-	temper = (((UINT16)nFrame[0x00F & ownId].mssg[0]) << 8 ) | nFrame[0x00F & ownId].mssg[1];
-	
-	dip204_set_cursor_position(6, 2);
-	dip204_printf_string("%d", light);
-	dip204_set_cursor_position(6, 3);
-	dip204_printf_string("%d", temper);
-
-}
+// void ownADC(void)
+// {
+// 	// Reads ADC on own board and displays values
+// 	UINT16 light = 0;
+// 	UINT16 temper= 0;
+// 
+// 	readADC();
+// 	
+// 	// Read light, 2 MSB msg[2], 8 LSB msg[3]
+// 	light = (((UINT16)sendFrame[0x00F & ownId].mssg[2]) << 8 ) | sendFrame[0x00F & ownId].mssg[3];
+// 	
+// 	// Read temp, 2 MSB msg[0], 8 LSB msg[1]
+// 	temper = (((UINT16)sendFrame[0x00F & ownId].mssg[0]) << 8 ) | sendFrame[0x00F & ownId].mssg[1];
+// 	
+// 	dip204_set_cursor_position(6, 2);
+// 	dip204_printf_string("%d", light);
+// 	dip204_set_cursor_position(6, 3);
+// 	dip204_printf_string("%d", temper);
+// 
+// }
 
 UINT8 nodeCount(void)
 {
@@ -101,7 +112,7 @@ UINT8 nodeCount(void)
 	// 15 addresses available
 	for(int j = 0; j < 15 ; ++j)
 	{
-		ids = nFrame[j].ID;
+		ids = sendFrame[j].ID;
 		//If there was a node found at the j'th bit 1 is added to l
 		if(ids != 0)
 		{
@@ -112,23 +123,20 @@ UINT8 nodeCount(void)
 	
 }
 
-// Prototype
-void blink(void);
 
 __attribute__((__interrupt__)) static void interrupt(void)
 {	
 	// Send message every second on rtc interrupt
-	blink();
 	for(int i = 0; i < 15; ++i)
 	{
-		nFrame[i] = youngFrame[i];
-		youngFrame[i] = emptyStruct[i];
+		sendFrame[i] = tempFrame[i];
+		tempFrame[i] = emptyStruct[i];
 	}
 	
 	//Send message
 	if(CANTxReady(0))
 	{
-		CANSendMsg(0, ownId, nFrame[0x00F & ownId].mssg, 8, 0);
+		CANSendMsg(0, ownId, sendFrame[0x00F & ownId].mssg, 8, 0);
 	}
 	
 	if (warmWarn == 1){
@@ -159,11 +167,11 @@ __attribute__((__interrupt__)) static void interrupt(void)
 	{
 		static int led_state = 0;
 		if (led_state == 0) {
-			LED_On(4);
+			LED_On(LED3);
 			led_state = 1;
 		}
 		else {
-			LED_Off(4);
+			LED_Off(LED3);
 			led_state = 0;
 		}
 	}
@@ -176,7 +184,6 @@ __attribute__((__interrupt__)) void but_interrupt(void)
 
 	if (emergency == 1)
 	{
-		//AVR32_GPIO.port[2].ovrc = 1 << 24;
 		emergAck = 1;
 	}
 	gpio_clear_pin_interrupt_flag(Switch1);
@@ -187,9 +194,102 @@ __attribute__((__interrupt__)) void but_interrupt(void)
 __attribute__((__interrupt__)) void RX_interrupt(void)
 {
 
-	LED_On(LED2);
+	LED_Toggle(LED2);
 	gpio_clear_pin_interrupt_flag(RX);
 }
+
+
+
+// void average(void)
+// {
+// 	// Calculate averages and add them printDisp
+// 	int x=0;
+// 	UINT16 night = 0;
+// 	UINT16 warm = 0;
+// 	UINT16 cold = 0;
+// 	UINT16 lighttot= 0;
+// 	UINT16 tempertot = 0;
+// 	UINT16 actNodes = nodeCount();
+// 	UINT16 warningNode = 0;
+// 	
+// 	//Calculating total light and temp received
+// 	for(int i = 0; i < 15; ++i)
+// 	{
+// 		lighttot += ((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]);
+// 		tempertot += ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]);
+// 	}
+// 	
+// 	// Calculate averages
+// 	for(int i = 0; i < 15; ++i)
+// 	{
+// 		// Light < average / 2 | Zero value  guard
+// 		if(((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]) < ((lighttot/actNodes)/2) && ((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]) != 0)
+// 		{
+// 			++night;
+// 		}
+// 		// Temperature < 0.85*Average | Zero value guard
+// 		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.85) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
+// 		{
+// 			++warm;
+// 		}
+// 		// Temperature > 1.5*Average | Zero value guard
+// 		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) > ((tempertot/actNodes)*1.50) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
+// 		{
+// 			++cold;
+// 			sendFrame[i].mssg[0] = 0;
+// 			sendFrame[i].mssg[1] = 0;
+// 			sendFrame[i].mssg[2] = 0;
+// 			sendFrame[i].mssg[3] = 0;
+// 			--actNodes;
+// 			faulty = 1;
+// 		}
+// 	}
+// 	
+// 	lighttot = 0;
+// 	tempertot = 0;
+// 	//Calculating total light and temp received
+// 	for(int i = 0; i < 15; ++i)
+// 	{
+// 		lighttot += ((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]);
+// 		tempertot += ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]);
+// 	}
+// 
+// 	if (night == 0 && cold == 0)
+// 	{
+// 		LED_Display(1);
+// 		warmWarn = 0;
+// 		faulty = 0;
+// 	}
+// 
+// 	else if(warm == 1)
+// 	{
+// 		warmWarn = 1;
+// 		LED_Off(1);
+// 		
+// 	}
+// 	else if(warm == 2 && emergAck == 0)
+// 	{
+// 		emergency = 1;
+// 		LED_Off(1);
+// 	}
+// 	
+// 	if (emergency == 1)
+// 	{
+// 		
+// 		if(emergAck == 1)
+// 		{
+// 			if(night < 1)
+// 			{
+// 				emergency = 0;
+// 				emergAck = 0;
+// 			}
+// 		}
+// 		
+// 	}
+// }
+
+
+
 
 void average(void)
 {
@@ -205,27 +305,27 @@ void average(void)
 	//Calculating total light and temp received
 	for(int i = 0; i < 15; ++i)
 	{
-		lighttot += ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]);
-		tempertot += ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]);
+		lighttot += ((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]);
+		tempertot += ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]);
 	}
 	
 	for(int i = 0; i < 15; ++i)
 	{
-		if(((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]) < ((lighttot/actNodes)/2) && ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]) != 0)
+		if(((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]) < ((lighttot/actNodes)/2) && ((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]) != 0)
 		{
 			++night;
 		}
-		if(((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) < ((tempertot/actNodes)*0.75) && ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) != 0)
+		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.75) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
 		{
 			++warm;
 		}
-		if(((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) > ((tempertot/actNodes)*1.10) && ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]) != 0)
+		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) > ((tempertot/actNodes)*1.50) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
 		{
 			++cold;
-			nFrame[i].mssg[0] = 0;
-			nFrame[i].mssg[1] = 0;
-			nFrame[i].mssg[2] = 0;
-			nFrame[i].mssg[3] = 0;
+			sendFrame[i].mssg[0] = 0;
+			sendFrame[i].mssg[1] = 0;
+			sendFrame[i].mssg[2] = 0;
+			sendFrame[i].mssg[3] = 0;
 			--actNodes;
 			faulty = 1;
 		}
@@ -235,8 +335,8 @@ void average(void)
 	//Calculating total light and temp received
 	for(int i = 0; i < 15; ++i)
 	{
-		lighttot += ((((UINT16)nFrame[i].mssg[2]) << 8 ) | nFrame[i].mssg[3]);
-		tempertot += ((((UINT16)nFrame[i].mssg[0]) << 8 ) | nFrame[i].mssg[1]);
+		lighttot += ((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]);
+		tempertot += ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]);
 	}
 
 		//Printing values to display
@@ -298,6 +398,10 @@ void printLCD(void)
 	dip204_printf_string("A L:");
 	dip204_set_cursor_position(15, 1);
 	dip204_printf_string("%d", nodeCount());
+	dip204_set_cursor_position(6, 2);
+	dip204_printf_string("%d", printDisp.ownLight);
+	dip204_set_cursor_position(6, 3);
+	dip204_printf_string("%d", printDisp.ownTemp);
 }
 void initBoard(void)
 {
@@ -337,7 +441,7 @@ void initBoard(void)
 	// Receive interrupt
 	INTC_register_interrupt(&RX_interrupt, (AVR32_GPIO_IRQ_0+RX/8), AVR32_INTC_INT0);
 	gpio_enable_pin_glitch_filter(RX);
-	gpio_enable_pin_interrupt(RX, GPIO_FALLING_EDGE);
+	gpio_enable_pin_interrupt(RX, GPIO_RISING_EDGE);
 	
 	Enable_global_interrupt();
 	// Delay to let the Oscillator get started
@@ -349,18 +453,26 @@ void initBoard(void)
 	dip204_clear_display();
 }
 
-
-void blink(void){
-	if (state == 0){
-		LED_On(LED3);
-		state = 1;
+void receiveMsg(void)
+{
+	//Read any message available
+	if(CANRxReady(0))
+	{
+		if( CANGetMsg(0, &Ident, msg, &mSize )) // Gets message and returns //TRUE if message received.
+		{
+			//Adding received ID to struct
+			tempFrame[0x00F & Ident].ID = Ident;
+		
+			//Adding frame to the struct
+			for(int i = 0; i < 8; ++i)
+			{
+				//Adding received message to struct
+				tempFrame[0x00F & Ident].mssg[i] = msg[i];
+			}
 		}
-	else if (state == 1){
-		LED_Off(LED3);
-		state = 0;
-		}	
+	
+	}
 }
-
 
 int main(void) 
 {
@@ -385,46 +497,30 @@ int main(void)
 		if(CANRxReady(0) || CANTxReady(0))
 		{
 			// Setting own id.
-			nFrame[0x00F & ownId].ID = ownId;
+			sendFrame[0x00F & ownId].ID = ownId;
+			receiveMsg();
 
 			//Write to display and read ADC
 			dip204_clear_display();
+			readADC();
 			printLCD();
-			ownADC();
+			//ownADC();
 			average();
 			dip204_hide_cursor();
 
-			//Read any message available
-			if(CANRxReady(0))
-			{
-				if( CANGetMsg(0, &Ident, msg, &mSize )) // Gets message and returns //TRUE if message received.
-				{					
-					//Adding received ID to struct
-					youngFrame[0x00F & Ident].ID = Ident;
-					
-					//Adding frame to the struct
-					for(int i = 0; i < 8; ++i)
-					{
-						//Adding received message to struct
-						youngFrame[0x00F & Ident].mssg[i] = msg[i];
-					}
-				}
-				
-			}
-			delay_ms(1000);
-
+			
 		}
 		// If the dongle isn't connected
 		else
 		{
 			//Write to display and read ADC
-			dip204_clear_display();
-			printLCD();
-			ownADC();
-			dip204_hide_cursor();
+// 			dip204_clear_display();
+// 			//printLCD();
+// 			//ownADC();
+// 			dip204_hide_cursor();
 			for(int j = 0; j < 16 ; ++j)
 			{
-				nFrame[j].ID = 0;
+				sendFrame[j].ID = 0;
 			}
 			
 			delay_ms(1000);
@@ -434,4 +530,3 @@ int main(void)
 
 	return 0;
 }
-	
