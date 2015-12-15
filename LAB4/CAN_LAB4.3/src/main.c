@@ -42,11 +42,12 @@ struct frame emptyStruct[15];
 
 struct display
 {
-	UINT8 nodes;
+	UINT16 nodes;
 	UINT16 ownLight;
 	UINT16 ownTemp;
 	UINT16 averLight;
-	UINT16 averTemp;	
+	UINT16 averTemp;
+	
 }printDisp;
 
 
@@ -83,31 +84,10 @@ void readADC(void)
 	printDisp.ownTemp = readTemp;
 }
 
-// void ownADC(void)
-// {
-// 	// Reads ADC on own board and displays values
-// 	UINT16 light = 0;
-// 	UINT16 temper= 0;
-// 
-// 	readADC();
-// 	
-// 	// Read light, 2 MSB msg[2], 8 LSB msg[3]
-// 	light = (((UINT16)sendFrame[0x00F & ownId].mssg[2]) << 8 ) | sendFrame[0x00F & ownId].mssg[3];
-// 	
-// 	// Read temp, 2 MSB msg[0], 8 LSB msg[1]
-// 	temper = (((UINT16)sendFrame[0x00F & ownId].mssg[0]) << 8 ) | sendFrame[0x00F & ownId].mssg[1];
-// 	
-// 	dip204_set_cursor_position(6, 2);
-// 	dip204_printf_string("%d", light);
-// 	dip204_set_cursor_position(6, 3);
-// 	dip204_printf_string("%d", temper);
-// 
-// }
-
-UINT8 nodeCount(void)
+void nodeCount(void)
 {
 	// Count nodes by iterating over addresses 
-	UINT8 nodes;
+	UINT8 nodes = 0;
 
 	// 15 addresses available
 	for(int j = 0; j < 15 ; ++j)
@@ -119,8 +99,8 @@ UINT8 nodeCount(void)
 			++nodes;
 		}
 	}
-	return nodes;
 	
+	printDisp.nodes = nodes;	
 }
 
 
@@ -200,97 +180,6 @@ __attribute__((__interrupt__)) void RX_interrupt(void)
 
 
 
-// void average(void)
-// {
-// 	// Calculate averages and add them printDisp
-// 	int x=0;
-// 	UINT16 night = 0;
-// 	UINT16 warm = 0;
-// 	UINT16 cold = 0;
-// 	UINT16 lighttot= 0;
-// 	UINT16 tempertot = 0;
-// 	UINT16 actNodes = nodeCount();
-// 	UINT16 warningNode = 0;
-// 	
-// 	//Calculating total light and temp received
-// 	for(int i = 0; i < 15; ++i)
-// 	{
-// 		lighttot += ((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]);
-// 		tempertot += ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]);
-// 	}
-// 	
-// 	// Calculate averages
-// 	for(int i = 0; i < 15; ++i)
-// 	{
-// 		// Light < average / 2 | Zero value  guard
-// 		if(((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]) < ((lighttot/actNodes)/2) && ((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]) != 0)
-// 		{
-// 			++night;
-// 		}
-// 		// Temperature < 0.85*Average | Zero value guard
-// 		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.85) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
-// 		{
-// 			++warm;
-// 		}
-// 		// Temperature > 1.5*Average | Zero value guard
-// 		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) > ((tempertot/actNodes)*1.50) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
-// 		{
-// 			++cold;
-// 			sendFrame[i].mssg[0] = 0;
-// 			sendFrame[i].mssg[1] = 0;
-// 			sendFrame[i].mssg[2] = 0;
-// 			sendFrame[i].mssg[3] = 0;
-// 			--actNodes;
-// 			faulty = 1;
-// 		}
-// 	}
-// 	
-// 	lighttot = 0;
-// 	tempertot = 0;
-// 	//Calculating total light and temp received
-// 	for(int i = 0; i < 15; ++i)
-// 	{
-// 		lighttot += ((((UINT16)sendFrame[i].mssg[2]) << 8 ) | sendFrame[i].mssg[3]);
-// 		tempertot += ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]);
-// 	}
-// 
-// 	if (night == 0 && cold == 0)
-// 	{
-// 		LED_Display(1);
-// 		warmWarn = 0;
-// 		faulty = 0;
-// 	}
-// 
-// 	else if(warm == 1)
-// 	{
-// 		warmWarn = 1;
-// 		LED_Off(1);
-// 		
-// 	}
-// 	else if(warm == 2 && emergAck == 0)
-// 	{
-// 		emergency = 1;
-// 		LED_Off(1);
-// 	}
-// 	
-// 	if (emergency == 1)
-// 	{
-// 		
-// 		if(emergAck == 1)
-// 		{
-// 			if(night < 1)
-// 			{
-// 				emergency = 0;
-// 				emergAck = 0;
-// 			}
-// 		}
-// 		
-// 	}
-// }
-
-
-
-
 void average(void)
 {
 	int x=0;
@@ -299,7 +188,7 @@ void average(void)
 	UINT16 cold = 0;
 	UINT16 lighttot= 0; 
 	UINT16 tempertot = 0;
-	UINT16 actNodes = nodeCount();
+	UINT16 actNodes = printDisp.nodes;
 	UINT16 warningNode = 0;
 	
 	//Calculating total light and temp received
@@ -315,7 +204,7 @@ void average(void)
 		{
 			++night;
 		}
-		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.75) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
+		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.85) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
 		{
 			++warm;
 		}
@@ -397,7 +286,7 @@ void printLCD(void)
 	dip204_set_cursor_position(10, 2);
 	dip204_printf_string("A L:");
 	dip204_set_cursor_position(15, 1);
-	dip204_printf_string("%d", nodeCount());
+	dip204_printf_string("%d", printDisp.nodes);
 	dip204_set_cursor_position(6, 2);
 	dip204_printf_string("%d", printDisp.ownLight);
 	dip204_set_cursor_position(6, 3);
@@ -455,6 +344,9 @@ void initBoard(void)
 
 void receiveMsg(void)
 {
+	//Clear memory contents
+	ClearMessages(msg);
+	
 	//Read any message available
 	if(CANRxReady(0))
 	{
@@ -490,21 +382,19 @@ int main(void)
 
 		adc_start(&AVR32_ADC);
 
-		//Clear memory contents
-		ClearMessages(msg);
-		
 		//If the dongle is connected to a bus
 		if(CANRxReady(0) || CANTxReady(0))
 		{
 			// Setting own id.
 			sendFrame[0x00F & ownId].ID = ownId;
+			
 			receiveMsg();
-
+			readADC();
+			nodeCount();
+						
 			//Write to display and read ADC
 			dip204_clear_display();
-			readADC();
 			printLCD();
-			//ownADC();
 			average();
 			dip204_hide_cursor();
 
