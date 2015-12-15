@@ -56,8 +56,8 @@ void readADC(void)
 	// Reads own ADC values and adds them to tempFrame
 	
 	// Reads values of pot, light and temperature
-	UINT32 readPot, readLight, readTemp;
-	UINT16 potMSB, potLSB, lightMSB, lightLSB, tempMSB, tempLSB;
+	UINT32 readLight, readTemp;
+	UINT16 lightMSB, lightLSB, tempMSB, tempLSB;
 	
 	//Reading ADC channels
 	readLight = adc_get_value(&AVR32_ADC, ADC_LIGHT_CHANNEL);
@@ -182,7 +182,6 @@ __attribute__((__interrupt__)) void RX_interrupt(void)
 
 void average(void)
 {
-	int x=0;
 	UINT16 night = 0;
 	UINT16 warm = 0;	
 	UINT16 cold = 0;

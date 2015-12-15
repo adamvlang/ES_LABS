@@ -29,23 +29,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  12 .debug_pubnames 00001a67  00000000  00000000  0000bb80  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_info   00021054  00000000  00000000  0000d5e7  2**0
+ 13 .debug_info   0002102a  00000000  00000000  0000d5e7  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_abbrev 000055f4  00000000  00000000  0002e63b  2**0
+ 14 .debug_abbrev 000055f4  00000000  00000000  0002e611  2**0
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_line   0000e6e9  00000000  00000000  00033c2f  2**0
+ 15 .debug_line   0000e6e9  00000000  00000000  00033c05  2**0
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_frame  000021b0  00000000  00000000  00042318  2**2
+ 16 .debug_frame  000021b0  00000000  00000000  000422f0  2**2
                   CONTENTS, READONLY, DEBUGGING
- 17 .debug_str    00004385  00000000  00000000  000444c8  2**0
+ 17 .debug_str    0000436f  00000000  00000000  000444a0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_loc    0000a248  00000000  00000000  0004884d  2**0
+ 18 .debug_loc    0000a248  00000000  00000000  0004880f  2**0
                   CONTENTS, READONLY, DEBUGGING
- 19 .debug_macinfo 00a21516  00000000  00000000  00052a95  2**0
+ 19 .debug_macinfo 00a21516  00000000  00000000  00052a57  2**0
                   CONTENTS, READONLY, DEBUGGING
  20 .stack        00001000  0000f000  0000f000  00000000  2**0
                   ALLOC
- 21 .debug_ranges 00001060  00000000  00000000  00a73fb0  2**3
+ 21 .debug_ranges 00001060  00000000  00000000  00a73f70  2**3
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .reset:
@@ -2028,7 +2028,7 @@ __attribute__((__interrupt__)) static void interrupt(void)
 80002c88:	00 00       	add	r0,r0
 80002c8a:	05 24       	ld.uh	r4,r2++
 80002c8c:	00 00       	add	r0,r0
-80002c8e:	05 20       	ld.uh	r0,r2++
+80002c8e:	05 28       	ld.uh	r8,r2++
 80002c90:	80 00       	ld.sh	r0,r0[0x0]
 80002c92:	31 fc       	mov	r12,31
 80002c94:	80 00       	ld.sh	r0,r0[0x0]
@@ -2036,11 +2036,11 @@ __attribute__((__interrupt__)) static void interrupt(void)
 80002c98:	00 00       	add	r0,r0
 80002c9a:	05 30       	ld.ub	r0,r2++
 80002c9c:	00 00       	add	r0,r0
-80002c9e:	05 18       	ld.sh	r8,r2++
+80002c9e:	05 2c       	ld.uh	r12,r2++
 80002ca0:	00 00       	add	r0,r0
-80002ca2:	05 1c       	ld.sh	r12,r2++
+80002ca2:	05 18       	ld.sh	r8,r2++
 80002ca4:	00 00       	add	r0,r0
-80002ca6:	05 28       	ld.uh	r8,r2++
+80002ca6:	05 20       	ld.uh	r0,r2++
 80002ca8:	80 00       	ld.sh	r0,r0[0x0]
 80002caa:	20 cc       	sub	r12,12
 
@@ -2495,7 +2495,7 @@ void average(void)
 80002f80:	80 00       	ld.sh	r0,r0[0x0]
 80002f82:	40 04       	lddsp	r4,sp[0x0]
 80002f84:	00 00       	add	r0,r0
-80002f86:	05 1c       	ld.sh	r12,r2++
+80002f86:	05 18       	ld.sh	r8,r2++
 80002f88:	80 00       	ld.sh	r0,r0[0x0]
 80002f8a:	34 28       	mov	r8,66
 80002f8c:	80 00       	ld.sh	r0,r0[0x0]
@@ -2509,7 +2509,7 @@ void average(void)
 80002f9c:	80 00       	ld.sh	r0,r0[0x0]
 80002f9e:	32 4c       	mov	r12,36
 80002fa0:	00 00       	add	r0,r0
-80002fa2:	05 2c       	ld.uh	r12,r2++
+80002fa2:	05 1c       	ld.sh	r12,r2++
 80002fa4:	00 00       	add	r0,r0
 80002fa6:	05 30       	ld.ub	r0,r2++
 
@@ -2568,7 +2568,7 @@ __attribute__((__interrupt__)) void but_interrupt(void)
 80002fe0:	00 00       	add	r0,r0
 80002fe2:	05 30       	ld.ub	r0,r2++
 80002fe4:	00 00       	add	r0,r0
-80002fe6:	05 2c       	ld.uh	r12,r2++
+80002fe6:	05 1c       	ld.sh	r12,r2++
 80002fe8:	80 00       	ld.sh	r0,r0[0x0]
 80002fea:	38 50       	mov	r0,-123
 
@@ -2581,8 +2581,8 @@ void readADC(void)
 {
 80002fec:	eb cd 40 c0 	pushm	r6-r7,lr
 	// Reads values of pot, light and temperature
-	UINT32 readPot, readLight, readTemp;
-	UINT16 potMSB, potLSB, lightMSB, lightLSB, tempMSB, tempLSB;
+	UINT32 readLight, readTemp;
+	UINT16 lightMSB, lightLSB, tempMSB, tempLSB;
 	
 	//Reading ADC channels
 	readLight = adc_get_value(&AVR32_ADC, ADC_LIGHT_CHANNEL);
