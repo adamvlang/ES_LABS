@@ -94,7 +94,7 @@ long int pcl_configure_clocks_rcsys(pcl_freq_param_t *param)
   // Supported main clock sources: PCL_MC_RCSYS
 
   // Supported synchronous clocks frequencies if RCSYS is the main clock source:
-  // 115200Hz, 57600Hz, 28800Hz, 14400Hz, 7200Hz, 3600Hz, 1800Hz, 900Hz, 450Hz.
+  // 115200Hz, 57600Hz, 28800Hz, 14400Hz, 7200Hz , 3600Hz, 1800Hz, 900Hz, 450Hz.
 
   // NOTE: by default, this implementation doesn't perform thorough checks on the
   // input parameters. To enable the checks, define AVR32SFW_INPUT_CHECK.

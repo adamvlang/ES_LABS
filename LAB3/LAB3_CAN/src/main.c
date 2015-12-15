@@ -39,8 +39,8 @@ int main(void) {
 	dip204_init(100,1);
 	dip204_clear_display();
 	
-	UINT16 Mask = 0; 
-	UINT16 flt = 0;
+	UINT16 Mask = 0x1FF00000; 
+	UINT16 flt = 0x18F00000;
 	UINT16 Flt[] = {flt,flt,flt,flt,flt,flt};
 	InitializeCAN(0, CAN_250kbps, Mask, Flt);
 	
@@ -83,7 +83,7 @@ int main(void) {
 			msg[6]=0;
 			msg[7]=speedPot;
 			// Channel, Identifier (max 0x1fffffff (29 bits)), Message, Number of bytes, R //or 0 (Remote frame or no remote frame).
-			//CANSendMsg( 0, 0x0CFE6CEE, msg, 8, 0 );
+			CANSendMsg( 0, 0x0CFE6CEE, msg, 8, 0 );
 			delay_ms(100);
 		}
 	}

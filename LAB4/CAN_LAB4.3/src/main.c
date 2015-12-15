@@ -209,7 +209,7 @@ void average(void)
 		{
 			++night;
 		}
-		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.85) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
+		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.98) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
 		{
 			++warm;
 		}
@@ -237,7 +237,7 @@ void average(void)
 	printDisp.averTemp	= tempertot/actNodes;
 	printDisp.night = night;
 
-		if (night == 0 && cold == 0)
+		if (warm == 0 && cold == 0)
 		{
 			LED_Display(1);
 			warmWarn = 0;

@@ -2257,8 +2257,8 @@ void average(void)
 80002e0e:	0e 96       	mov	r6,r7
 80002e10:	30 08       	mov	r8,0
 80002e12:	50 58       	stdsp	sp[0x14],r8
-80002e14:	50 78       	stdsp	sp[0x1c],r8
-80002e16:	50 68       	stdsp	sp[0x18],r8
+80002e14:	50 68       	stdsp	sp[0x18],r8
+80002e16:	50 78       	stdsp	sp[0x1c],r8
 		tempertot += ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]);
 	}
 	
@@ -2270,7 +2270,7 @@ void average(void)
 		{
 			++night;
 		}
-		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.85) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
+		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.98) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
 80002e1c:	e1 d9 c0 10 	bfextu	r0,r9,0x0,0x10
 			sendFrame[i].mssg[0] = 0;
 			sendFrame[i].mssg[1] = 0;
@@ -2298,12 +2298,12 @@ void average(void)
 80002e3e:	c0 50       	breq	80002e48 <average+0x7c>
 		{
 			++night;
-80002e40:	40 68       	lddsp	r8,sp[0x18]
+80002e40:	40 78       	lddsp	r8,sp[0x1c]
 80002e42:	2f f8       	sub	r8,-1
 80002e44:	5c 88       	casts.h	r8
-80002e46:	50 68       	stdsp	sp[0x18],r8
+80002e46:	50 78       	stdsp	sp[0x1c],r8
 		}
-		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.85) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
+		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) < ((tempertot/actNodes)*0.98) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
 80002e48:	09 a7       	ld.ub	r7,r4[0x2]
 80002e4a:	05 88       	ld.ub	r8,r2[0x0]
 80002e4c:	f1 e7 10 87 	or	r7,r8,r7<<0x8
@@ -2315,10 +2315,10 @@ void average(void)
 80002e62:	f9 d8 c0 10 	bfextu	r12,r8,0x0,0x10
 80002e66:	f0 1f 00 4f 	mcall	80002fa0 <average+0x1d4>
 80002e6a:	fa eb 00 08 	st.d	sp[8],r10
-80002e6e:	e0 68 33 33 	mov	r8,13107
-80002e72:	ea 18 33 33 	orh	r8,0x3333
-80002e76:	e0 69 33 33 	mov	r9,13107
-80002e7a:	ea 19 3f eb 	orh	r9,0x3feb
+80002e6e:	e0 68 8f 5c 	mov	r8,36700
+80002e72:	ea 18 f5 c2 	orh	r8,0xf5c2
+80002e76:	e0 69 5c 28 	mov	r9,23592
+80002e7a:	ea 19 3f ef 	orh	r9,0x3fef
 80002e7e:	f0 1f 00 4a 	mcall	80002fa4 <average+0x1d8>
 80002e82:	14 98       	mov	r8,r10
 80002e84:	16 99       	mov	r9,r11
@@ -2329,10 +2329,10 @@ void average(void)
 80002e92:	c0 50       	breq	80002e9c <average+0xd0>
 		{
 			++warm;
-80002e94:	40 78       	lddsp	r8,sp[0x1c]
+80002e94:	40 68       	lddsp	r8,sp[0x18]
 80002e96:	2f f8       	sub	r8,-1
 80002e98:	5c 88       	casts.h	r8
-80002e9a:	50 78       	stdsp	sp[0x1c],r8
+80002e9a:	50 68       	stdsp	sp[0x18],r8
 		}
 		if(((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) > ((tempertot/actNodes)*1.50) && ((((UINT16)sendFrame[i].mssg[0]) << 8 ) | sendFrame[i].mssg[1]) != 0)
 80002e9c:	30 08       	mov	r8,0
@@ -2423,11 +2423,11 @@ void average(void)
 80002f18:	f0 05 0d 04 	divu	r4,r8,r5
 80002f1c:	b4 44       	st.h	r10[0x8],r4
 	printDisp.night = night;
-80002f1e:	40 68       	lddsp	r8,sp[0x18]
+80002f1e:	40 78       	lddsp	r8,sp[0x1c]
 80002f20:	b4 58       	st.h	r10[0xa],r8
 
-		if (night == 0 && cold == 0)
-80002f22:	10 99       	mov	r9,r8
+		if (warm == 0 && cold == 0)
+80002f22:	40 69       	lddsp	r9,sp[0x18]
 80002f24:	40 58       	lddsp	r8,sp[0x14]
 80002f26:	10 49       	or	r9,r8
 80002f28:	30 08       	mov	r8,0
@@ -2449,7 +2449,7 @@ void average(void)
 
 		else if(warm == 1)
 80002f42:	30 18       	mov	r8,1
-80002f44:	40 79       	lddsp	r9,sp[0x1c]
+80002f44:	40 69       	lddsp	r9,sp[0x18]
 80002f46:	f0 09 19 00 	cp.h	r9,r8
 80002f4a:	c0 71       	brne	80002f58 <average+0x18c>
 		{
@@ -2464,7 +2464,7 @@ void average(void)
 		}
 		else if(warm == 2 && emergAck == 0)
 80002f58:	30 28       	mov	r8,2
-80002f5a:	40 79       	lddsp	r9,sp[0x1c]
+80002f5a:	40 69       	lddsp	r9,sp[0x18]
 80002f5c:	f0 09 19 00 	cp.h	r9,r8
 80002f60:	c0 a1       	brne	80002f74 <average+0x1a8>
 80002f62:	49 78       	lddpc	r8,80002fbc <average+0x1f0>
@@ -2494,7 +2494,7 @@ void average(void)
 80002f82:	c0 81       	brne	80002f92 <average+0x1c6>
 			{
 				if(night < 1)
-80002f84:	40 68       	lddsp	r8,sp[0x18]
+80002f84:	40 78       	lddsp	r8,sp[0x1c]
 80002f86:	58 08       	cp.w	r8,0
 80002f88:	c0 51       	brne	80002f92 <average+0x1c6>
 				{
